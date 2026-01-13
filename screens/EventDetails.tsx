@@ -298,7 +298,7 @@ const EventDetails = () => {
             <TouchableOpacity
               style={[
                 styles.iconButton,
-                { backgroundColor: theme === 'dark' ? 'rgba(0,0,0,0.3)' : 'rgba(15,23,42,0.06)' },
+                { backgroundColor: theme === 'dark' ? 'rgba(0,0,0,0.10)' : 'rgba(15,23,42,0.06)' },
               ]}
               onPress={() => navigation.goBack()}
             >

@@ -292,11 +292,7 @@ const HomeScreen = () => {
               return isValid;
             })
             .map((event: any) => {
-              // Check for image field in multiple possible formats:
-              // 1. imageUrl (camelCase - Java default)
-              // 2. image_url (snake_case - if Jackson PropertyNamingStrategy is configured)
-              // 3. image (fallback)
-              // Handle null values explicitly (null is falsy but we want to treat it as "no image")
+           
               const imageValue = (event.imageUrl && event.imageUrl.trim() !== '')
                 || (event.image_url && event.image_url.trim() !== '')
                 || (event.image && event.image.trim() !== '')
@@ -307,8 +303,7 @@ const HomeScreen = () => {
 
               return {
                 ...event,
-                id: String(event.id), // Ensure id is always a string
-                // Map imageUrl/image_url from backend to image for internal use
+                id: String(event.id), 
                 image: imageValue,
               };
             });
@@ -344,11 +339,10 @@ const HomeScreen = () => {
     setRefreshing(true);
     try {
       if (searchQuery.trim()) {
-        // If there's a search query, perform search
         await performSearch(searchQuery);
       } else {
-        // Otherwise, fetch regular events
-        await fetchEvents(false); // Don't show loading spinner on pull refresh
+     
+        await fetchEvents(false); 
       }
     } catch (err) {
 
@@ -357,8 +351,6 @@ const HomeScreen = () => {
     }
   }, [searchQuery, performSearch]);
 
-  // Fetch scheduled events on component mount and when category changes
-  // Initial fetch on mount and when category changes (only if no search query)
   useEffect(() => {
     if (!searchQuery.trim()) {
       fetchEvents();

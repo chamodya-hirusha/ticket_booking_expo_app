@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
     View,
     Text,
@@ -8,10 +8,14 @@ import {
     KeyboardAvoidingView,
     Platform,
     ScrollView,
-    ActivityIndicator
+    ActivityIndicator,
+    Alert
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
+import * as SecureStore from 'expo-secure-store';
+import * as LocalAuthentication from 'expo-local-authentication';
 import { API_CONFIG } from '../constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
@@ -19,12 +23,20 @@ import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ForgotPasswordModal, ResetPasswordModal, VerifyAccountModal } from '../components/modals/AuthModals';
+import { BiometricModal } from '../components/modals/BiometricModal';
 import { apiService } from '../services/api';
 import { toast } from '../services/toast';
 
 const SignIn = ({ navigation }: any) => {
     const { colors, theme } = useTheme();
-    const { signIn } = useAuth();
+    const {
+        signIn,
+        signInWithBiometrics,
+        isBiometricSupported,
+        isBiometricEnrolled,
+        hasSavedCredentials,
+        getBiometricTypes
+    } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -35,9 +47,44 @@ const SignIn = ({ navigation }: any) => {
     const [resetEmail, setResetEmail] = useState('');
     const [showVerifyModal, setShowVerifyModal] = useState(false);
     const [verifyEmail, setVerifyEmail] = useState('');
-    const [pendingPassword, setPendingPassword] = useState(''); 
+    const [pendingPassword, setPendingPassword] = useState('');
+    const [showBiometricModal, setShowBiometricModal] = useState(false);
+    const [detectedBiometricType, setDetectedBiometricType] = useState('Biometrics');
+    const isPromptingBiometrics = useRef(false);
 
     const { completeSocialLogin } = useAuth();
+
+    useEffect(() => {
+        const initializeAuth = async () => {
+            // Prefill email
+            const hasSaved = await hasSavedCredentials();
+            if (hasSaved) {
+                const savedEmail = await SecureStore.getItemAsync('auth_email');
+                if (savedEmail) {
+                    setEmail(savedEmail);
+                }
+            }
+
+            // Check for preferred biometric method and auto-trigger
+            const supported = await isBiometricSupported();
+            const enrolled = await isBiometricEnrolled();
+
+            if (supported && enrolled && hasSaved) {
+                const preferredType = await AsyncStorage.getItem('last_biometric_type');
+                if (preferredType) {
+                    const authType = preferredType === 'FACE'
+                        ? LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION
+                        : LocalAuthentication.AuthenticationType.FINGERPRINT;
+
+                    // Small delay to ensure UI is ready before system prompt
+                    setTimeout(() => {
+                        performBiometricAuth(authType);
+                    }, 500);
+                }
+            }
+        };
+        initializeAuth();
+    }, []);
 
     const handleSignIn = async () => {
         if (!email || !password) {
@@ -49,7 +96,7 @@ const SignIn = ({ navigation }: any) => {
         setError('');
 
         const result = await signIn(email, password);
-        setIsLoading(false);
+        setIsLoading(true); // Still loading for navigation
 
         const isUnverified =
             result.isVerified === false ||
@@ -62,79 +109,104 @@ const SignIn = ({ navigation }: any) => {
             ));
 
         if (isUnverified) {
-            // Account not verified, send verification code ONCE and show verify modal
+            setIsLoading(false);
             setVerifyEmail(email);
-            setPendingPassword(password); 
+            setPendingPassword(password);
 
-            // Automatically send verification code email (only once)
             try {
                 const resendResponse = await apiService.resendVerify(email);
                 if (resendResponse.success) {
                     toast.success('Verification code sent to your email');
                 }
-            } catch (error) {
-                // Still show modal even if resend fails (user can resend from modal)
-            }
+            } catch (error) { }
 
             setShowVerifyModal(true);
         } else if (result.success) {
-            // Account verified, navigation will be handled by App.tsx based on auth state
+            // Success handled by App state
         } else {
-            // Other errors - check for specific error messages
+            setIsLoading(false);
             const errorMsg = result.error || 'Invalid email or password';
+            setError(errorMsg);
+        }
+    };
 
-            const isIgnoredError = errorMsg.toLowerCase().includes('invalid credentials');
+    const handleBiometricAuth = async () => {
+        if (isPromptingBiometrics.current) return;
 
-            if (isIgnoredError) {
-                // Silently ignore this error - it's a normal invalid login attempt
-                setError('Invalid email or password');
-            } else if (errorMsg.toLowerCase().includes('email') &&
-                (errorMsg.toLowerCase().includes('already') ||
-                    errorMsg.toLowerCase().includes('duplicate') ||
-                    errorMsg.toLowerCase().includes('use'))) {
-                // Check for email already use error
-                toast.error('Email already in use. Please use a different email.');
+        const supported = await isBiometricSupported();
+        const enrolled = await isBiometricEnrolled();
+        const hasSaved = await hasSavedCredentials();
+
+        if (supported && enrolled && hasSaved) {
+            const types = await getBiometricTypes();
+            setDetectedBiometricType(types[0] || 'Biometrics');
+            setShowBiometricModal(true);
+        }
+    };
+
+    const performBiometricAuth = async (type: LocalAuthentication.AuthenticationType) => {
+        setShowBiometricModal(false);
+        isPromptingBiometrics.current = true;
+
+        try {
+            setIsLoading(true);
+            const result = await signInWithBiometrics(type);
+
+            const isUnverified =
+                result.isVerified === false ||
+                (!result.success && result.error && (
+                    result.error.toLowerCase().includes('not verified') ||
+                    result.error.toLowerCase().includes('verify your account') ||
+                    result.error.toLowerCase().includes('unverified') ||
+                    result.error.toLowerCase().includes('account not verified') ||
+                    result.error.toLowerCase().includes('05')
+                ));
+
+            if (isUnverified) {
+                setVerifyEmail(email);
+                const savedPassword = await SecureStore.getItemAsync('auth_password');
+                if (savedPassword) setPendingPassword(savedPassword);
+
+                try {
+                    await apiService.resendVerify(email);
+                    toast.success('Verification code sent to your email');
+                } catch (e) { }
+
+                setShowVerifyModal(true);
+            } else if (result.success) {
+                // Save preferred biometric type on success
+                const typeKey = type === LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION ? 'FACE' : 'FINGERPRINT';
+                await AsyncStorage.setItem('last_biometric_type', typeKey);
+
+                toast.success('Signed in successfully!');
             } else {
-                setError(errorMsg);
+                const errorMsg = result.error || 'Biometric login failed';
+                if (!errorMsg.toLowerCase().includes('cancelled') && !errorMsg.toLowerCase().includes('failed')) {
+                    toast.error(errorMsg);
+                }
             }
+        } catch (error) {
+            toast.error('An unexpected error occurred during biometric login');
+        } finally {
+            setIsLoading(false);
+            isPromptingBiometrics.current = false;
         }
     };
 
     const handleSocialLogin = async (provider: 'google' | 'facebook') => {
         try {
-            // Use the gateway URL (base URL without /api suffix)
             const gatewayUrl = API_CONFIG.BASE_URL.replace(/\/api$/, '');
             const authUrl = `${gatewayUrl}/oauth2/authorization/${provider}?source=login`;
-
             const redirectUrl = Linking.createURL('/oauth2/redirect');
-
-            if (__DEV__) {
-                console.log(`[SignIn] Starting ${provider} login with WebBrowser:`, authUrl);
-                console.log(`[SignIn] Expected redirect URL:`, redirectUrl);
-            }
 
             const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUrl);
 
-            if (__DEV__) {
-                console.log(`[SignIn] WebBrowser result type:`, result.type);
-            }
-
             if (result.type === 'success' && result.url) {
-                // The result.url contains the full redirection URL including the token
                 const url = result.url;
-                if (__DEV__) {
-                    console.log(`[SignIn] Successful redirect URL:`, url);
-                }
-
                 if (url.includes('token=')) {
                     const tokenParts = url.split('token=');
                     if (tokenParts.length > 1) {
                         const token = tokenParts[1].split('&')[0];
-
-                        if (__DEV__) {
-                            console.log('[SignIn] Token extracted from WebBrowser redirect, length:', token.length);
-                        }
-
                         const loginResult = await completeSocialLogin(token);
                         if (loginResult.success) {
                             toast.success('Signed in successfully!');
@@ -147,13 +219,8 @@ const SignIn = ({ navigation }: any) => {
                     const errorMsg = errorParts.length > 1 ? decodeURIComponent(errorParts[1].split('&')[0]) : 'Social login failed';
                     setError(errorMsg);
                 }
-            } else if (result.type === 'cancel') {
-                if (__DEV__) {
-                    console.log('[SignIn] Social login cancelled by user');
-                }
             }
         } catch (err: any) {
-            console.error('[SignIn] WebBrowser error:', err);
             setError('An error occurred during social login. Please try again.');
         }
     };
@@ -209,6 +276,7 @@ const SignIn = ({ navigation }: any) => {
                                     onChangeText={setPassword}
                                     secureTextEntry={!showPassword}
                                     autoCapitalize="none"
+                                    onFocus={handleBiometricAuth}
                                 />
                                 <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
                                     <Feather
@@ -294,6 +362,14 @@ const SignIn = ({ navigation }: any) => {
                 </ScrollView>
             </KeyboardAvoidingView>
 
+            {/* Biometric Modal */}
+            <BiometricModal
+                visible={showBiometricModal}
+                onClose={() => setShowBiometricModal(false)}
+                onAuthenticate={performBiometricAuth}
+                biometricType={detectedBiometricType}
+            />
+
             {/* Forgot Password Modal */}
             <ForgotPasswordModal
                 visible={showForgotPassword}
@@ -337,16 +413,16 @@ const SignIn = ({ navigation }: any) => {
                         setIsLoading(false);
 
                         if (loginResult.success) {
-                        
+
                             setPendingPassword('');
                         } else {
                             setError(loginResult.error || 'Account verified but failed to sign in. Please try again.');
-                            setPendingPassword(''); 
+                            setPendingPassword('');
                         }
                     } catch (error: any) {
                         setIsLoading(false);
                         setError('Account verified but failed to sign in. Please try again.');
-                        setPendingPassword(''); 
+                        setPendingPassword('');
                     }
 
                     setVerifyEmail('');

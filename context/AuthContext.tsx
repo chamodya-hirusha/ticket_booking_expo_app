@@ -1,8 +1,14 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
+import * as LocalAuthentication from 'expo-local-authentication';
 import { apiService } from '../services/api';
 import { handleApiError } from '../utils/apiErrorHandler';
 import { toast } from '../services/toast';
+
+const SECURE_AUTH_EMAIL_KEY = 'auth_email';
+const SECURE_AUTH_PASSWORD_KEY = 'auth_password';
 
 interface User {
     id: string;
@@ -26,6 +32,11 @@ interface AuthContextType {
     handlePermissionError: () => Promise<void>;
     hasRole: (role: string) => boolean;
     isAuthenticated: boolean;
+    isBiometricSupported: () => Promise<boolean>;
+    isBiometricEnrolled: () => Promise<boolean>;
+    signInWithBiometrics: (type?: LocalAuthentication.AuthenticationType) => Promise<{ success: boolean; error?: string; isVerified?: boolean }>;
+    hasSavedCredentials: () => Promise<boolean>;
+    getBiometricTypes: () => Promise<string[]>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -141,6 +152,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                     };
 
                     await AsyncStorage.setItem('user', JSON.stringify(user));
+
+                    // Save credentials for biometrics if successful
+                    await SecureStore.setItemAsync(SECURE_AUTH_EMAIL_KEY, email);
+                    await SecureStore.setItemAsync(SECURE_AUTH_PASSWORD_KEY, password);
+
                     setUser(user);
 
                     return { success: true, isVerified };
@@ -156,6 +172,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                     };
 
                     await AsyncStorage.setItem('user', JSON.stringify(user));
+
+                    // Save credentials for biometrics if successful
+                    await SecureStore.setItemAsync(SECURE_AUTH_EMAIL_KEY, email);
+                    await SecureStore.setItemAsync(SECURE_AUTH_PASSWORD_KEY, password);
+
                     setUser(user);
 
                     return { success: true, isVerified: true };
@@ -363,7 +384,83 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             completeSocialLogin,
             handlePermissionError,
             hasRole,
-            isAuthenticated: !!user
+            isAuthenticated: !!user,
+            isBiometricSupported: async () => {
+                const compatible = await LocalAuthentication.hasHardwareAsync();
+                return compatible;
+            },
+            isBiometricEnrolled: async () => {
+                const enrolled = await LocalAuthentication.isEnrolledAsync();
+                return enrolled;
+            },
+            hasSavedCredentials: async () => {
+                const email = await SecureStore.getItemAsync(SECURE_AUTH_EMAIL_KEY);
+                const password = await SecureStore.getItemAsync(SECURE_AUTH_PASSWORD_KEY);
+                return !!(email && password);
+            },
+            signInWithBiometrics: async (type?: LocalAuthentication.AuthenticationType) => {
+                try {
+                    const hasHardware = await LocalAuthentication.hasHardwareAsync();
+                    if (!hasHardware) {
+                        return { success: false, error: 'Biometric authentication is not supported on this device.' };
+                    }
+
+                    const supportedTypes = await LocalAuthentication.supportedAuthenticationTypesAsync();
+
+                    // If a specific type was requested, check if it's supported
+                    if (type && !supportedTypes.includes(type)) {
+                        const typeName = type === LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION ? 'Face Identification' : 'Fingerprint';
+                        return { success: false, error: `${typeName} is not supported or not available on this device.` };
+                    }
+
+                    const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+                    if (!isEnrolled) {
+                        return { success: false, error: 'No biometrics enrolled. Please set up biometrics in your device settings.' };
+                    }
+
+                    const savedEmail = await SecureStore.getItemAsync(SECURE_AUTH_EMAIL_KEY);
+                    const savedPassword = await SecureStore.getItemAsync(SECURE_AUTH_PASSWORD_KEY);
+
+                    if (!savedEmail || !savedPassword) {
+                        return { success: false, error: 'No saved credentials found. Please sign in manually first to enable biometric login.' };
+                    }
+
+                    // Configuration to help prioritize requested type
+                    const promptMessage = type === LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION
+                        ? (Platform.OS === 'ios' ? 'Sign in with Face ID' : 'Sign in with Face Unlock')
+                        : (type === LocalAuthentication.AuthenticationType.FINGERPRINT
+                            ? (Platform.OS === 'ios' ? 'Sign in with Touch ID' : 'Sign in with Fingerprint')
+                            : 'Sign in with Biometrics');
+
+                    const result = await LocalAuthentication.authenticateAsync({
+                        promptMessage,
+                        cancelLabel: 'Cancel',
+                        disableDeviceFallback: false,
+                    });
+
+                    if (result.success) {
+                        return await signIn(savedEmail, savedPassword);
+                    } else {
+                        return { success: false, error: 'Biometric authentication failed or was cancelled.' };
+                    }
+                } catch (error) {
+                    return { success: false, error: 'An unexpected error occurred during biometric authentication.' };
+                }
+            },
+            getBiometricTypes: async () => {
+                const types = await LocalAuthentication.supportedAuthenticationTypesAsync();
+                const typeLabels: string[] = [];
+                if (types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)) {
+                    typeLabels.push(Platform.OS === 'android' ? 'Fingerprint' : 'Touch ID');
+                }
+                if (types.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)) {
+                    typeLabels.push(Platform.OS === 'android' ? 'Face Unlock' : 'Face ID');
+                }
+                if (types.includes(LocalAuthentication.AuthenticationType.IRIS)) {
+                    typeLabels.push('Iris');
+                }
+                return typeLabels;
+            }
         }}>
             {children}
         </AuthContext.Provider>

@@ -11,8 +11,14 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { StripeProvider } from '@stripe/stripe-react-native';
+import * as SplashScreen from 'expo-splash-screen';
 import { STRIPE_CONFIG } from './constants';
 import './utils/silenceConsole';
+
+// Keep the splash screen visible while we fetch resources
+SplashScreen.preventAutoHideAsync().catch(() => {
+  /* reloading the app might cause this error. */
+});
 
 // Dynamic import for Notifee
 let notifee: any = null;
@@ -136,8 +142,16 @@ const AppNavigator = () => {
   const { colors, theme } = useTheme();
   const { isAuthenticated, isLoading } = useAuth();
 
+  useEffect(() => {
+    if (!isLoading) {
+      SplashScreen.hideAsync().catch(() => {
+        /* error hiding splash screen */
+      });
+    }
+  }, [isLoading]);
+
   if (isLoading) {
-    return null; // Or a loading screen
+    return null;
   }
 
   return (

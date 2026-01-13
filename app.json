@@ -30,6 +30,15 @@
           "savePhotosPermission": "Allow $(PRODUCT_NAME) to save ticket PDFs to your photo library.",
           "isAccessMediaLocationEnabled": false
         }
+      ],
+      "expo-secure-store",
+      "expo-local-authentication",
+      [
+        "@stripe/stripe-react-native",
+        {
+          "merchantIdentifier": "merchant.com.mobileapp",
+          "enableGooglePay": false
+        }
       ]
     ],
     "ios": {
@@ -37,7 +46,8 @@
       "bundleIdentifier": "com.mobileapp",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to save ticket QR codes.",
-        "NSPhotoLibraryAddUsageDescription": "This app needs permission to save ticket QR codes to your photo library."
+        "NSPhotoLibraryAddUsageDescription": "This app needs permission to save ticket QR codes to your photo library.",
+        "NSFaceIDUsageDescription": "Allow $(PRODUCT_NAME) to use FaceID for secure login."
       },
       "config": {
         "usesNonExemptEncryption": false
@@ -46,13 +56,21 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FFFFFF"
+        "backgroundColor": "#0a0a1a"
       },
       "package": "com.mobileapp",
       "permissions": [
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
-        "READ_MEDIA_IMAGES"
+        "READ_MEDIA_IMAGES",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.READ_MEDIA_AUDIO",
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT"
       ],
       "blockedPermissions": [
         "android.permission.RECORD_AUDIO"
@@ -60,6 +78,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "03b0a56a-6861-4c38-825c-b2af2bf67517"
+      }
     }
   }
 }
