@@ -18,6 +18,7 @@ import { useTheme } from '../context/ThemeContext';
 import { Event } from '../constants';
 import { apiService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { formatPrice } from '../utils/event';
 
 interface TicketType {
    id: string;
@@ -35,7 +36,9 @@ type ConfirmPayRouteProp = RouteProp<{
 }, 'ConfirmPay'>;
 
 const { width } = Dimensions.get('window');
+// No service fee for now as backend doesn't support it in total calculation
 const SERVICE_FEE = 10;
+
 
 const ConfirmPay = () => {
    const navigation = useNavigation();
@@ -57,24 +60,13 @@ const ConfirmPay = () => {
 
    const getTicketDetails = React.useMemo(() => {
       if (tickets.length > 0) {
-         const ticket = tickets[0]; 
-         let actualPrice = ticket.price;
-         if (event) {
-            const ticketTypeUpper = ticket.id.toUpperCase();
-            if (ticketTypeUpper.includes('VIP')) {
-               actualPrice = event.vipTicketPrice || ticket.price;
-            } else if (ticketTypeUpper.includes('PREMIUM')) {
-               actualPrice = event.premiumTicketPrice || ticket.price;
-            } else {
-               actualPrice = event.generalTicketPrice || ticket.price;
-            }
-         }
+         const ticket = tickets[0];
 
          return {
             type: ticket.name || 'General',
             quantity: ticket.quantity || 1,
-            price: actualPrice || 0,
-            total: (actualPrice || 0) * (ticket.quantity || 1)
+            price: ticket.price || 0,
+            total: (ticket.price || 0) * (ticket.quantity || 1)
          };
       }
 
@@ -136,10 +128,8 @@ const ConfirmPay = () => {
    }, [user]);
 
    const mapTicketTypeToAPI = (ticketName: string): string => {
-      const upperName = ticketName.toUpperCase();
-      if (upperName.includes('VIP')) return 'VIP';
-      if (upperName.includes('PREMIUM')) return 'PREMIUM';
-      return 'GENERAL';
+      // Return the name directly since backend now supports dynamic ticket types
+      return ticketName;
    };
 
    const handlePay = async () => {
@@ -173,10 +163,7 @@ const ConfirmPay = () => {
          const reservationResponse = await apiService.reservation.createReservation(
             eventId,
             ticketType,
-            ticketDetails.quantity,
-            ticketDetails.price,
-            user.id,
-            (user as any).role || 'USER'
+            ticketDetails.quantity
          );
 
          if (!reservationResponse.success || !reservationResponse.data) {
@@ -198,7 +185,7 @@ const ConfirmPay = () => {
          const paymentResponse = await apiService.payment.createStripePayment(
             reservation.id,
             totalAmount,
-            'USD',
+            'EUR',
             user.id
          );
 
@@ -315,16 +302,18 @@ const ConfirmPay = () => {
                   </View>
                   <View style={styles.rowItem}>
                      <Text style={[styles.itemLabel, { color: colors.textSecondary }]}>
-                        Tickets ({ticketDetails?.quantity || 0} x {ticketDetails?.type || 'General'} @ ${(ticketDetails?.price || 0).toFixed(2)})
+                        Tickets ({ticketDetails?.quantity || 0} x {ticketDetails?.type || 'General'} @ {formatPrice(ticketDetails?.price || 0)})
                      </Text>
                      <Text style={[styles.itemValue, { color: colors.text }]}>
-                        ${(ticketDetails?.total || 0).toFixed(2)}
+                        {formatPrice(ticketDetails?.total || 0)}
                      </Text>
                   </View>
-                  <View style={styles.rowItem}>
-                     <Text style={[styles.itemLabel, { color: colors.textSecondary }]}>Service Fee</Text>
-                     <Text style={[styles.itemValue, { color: colors.text }]}>${SERVICE_FEE.toFixed(2)}</Text>
-                  </View>
+                  {SERVICE_FEE > 0 && (
+                     <View style={styles.rowItem}>
+                        <Text style={[styles.itemLabel, { color: colors.textSecondary }]}>Service Fee</Text>
+                        <Text style={[styles.itemValue, { color: colors.text }]}>{formatPrice(SERVICE_FEE)}</Text>
+                     </View>
+                  )}
                </View>
 
                <View style={styles.totalRow}>
@@ -338,7 +327,7 @@ const ConfirmPay = () => {
                         textShadowRadius: 10
                      }
                   ]}>
-                     ${(totalAmount || 0).toFixed(2)}
+                     {formatPrice(totalAmount || 0)}
                   </Text>
                </View>
             </View>
@@ -409,7 +398,7 @@ const ConfirmPay = () => {
                   <>
                      <MaterialIcons name="lock" size={20} color={theme === 'dark' ? '#000' : '#fff'} />
                      <Text style={[styles.payButtonText, { color: theme === 'dark' ? '#000' : '#fff' }]}>COMPLETE PAYMENT</Text>
-                     <Text style={[styles.payButtonAmount, { color: theme === 'dark' ? '#000' : '#fff' }]}>${totalAmount.toFixed(2)}</Text>
+                     <Text style={[styles.payButtonAmount, { color: theme === 'dark' ? '#000' : '#fff' }]}>{formatPrice(totalAmount)}</Text>
                   </>
                )}
             </TouchableOpacity>

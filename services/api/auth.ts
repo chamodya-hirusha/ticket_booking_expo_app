@@ -37,8 +37,8 @@ export class AuthApiService extends BaseApiService {
 
     if (response.success && response.data) {
       const token =
-        response.data?.token || 
-        response.data?.content?.token || 
+        response.data?.token ||
+        response.data?.content?.token ||
         (typeof response.data === 'string' ? response.data : null);
 
       if (token && typeof token === 'string') {

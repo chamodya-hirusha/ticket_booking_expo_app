@@ -9,7 +9,8 @@ import {
     FlatList,
     Dimensions,
     Modal,
-    Platform
+    Platform,
+    ActivityIndicator
 } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -18,16 +19,63 @@ import { useTheme } from '../context/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { getEventImageUrl } from '../constants';
+import { apiService } from '../services/api';
+import { transformEvent, getEventPriceDisplay } from '../utils/event';
+
+const CATEGORY_ICONS: Record<string, string> = {
+    'All': 'grid-outline',
+    'Music': 'musical-notes-outline',
+    'Sports': 'football-outline',
+    'Tech': 'hardware-chip-outline',
+    'Art': 'color-palette-outline',
+    'Business': 'briefcase-outline',
+    'Education': 'book-outline',
+    'Health': 'medical-outline',
+    'Food': 'restaurant-outline',
+    'Comedy': 'happy-outline',
+    'Games': 'game-controller-outline',
+    'Movies': 'film-outline',
+    'Theater': 'videocam-outline',
+    'MUSIC': 'musical-notes-outline',
+    'SPORTS': 'football-outline',
+    'THEATER': 'film-outline',
+    'CONCERT': 'musical-notes-outline',
+    'FESTIVAL': 'calendar-outline',
+    // Fix for invalid icon warnings
+    'Cpu': 'hardware-chip-outline',
+    'Trophy': 'trophy-outline',
+    'Palette': 'color-palette-outline',
+    'Briefcase': 'briefcase-outline',
+    'Utensils': 'restaurant-outline',
+    'PartyPopper': 'sparkles-outline',
+    'GraduationCap': 'school-outline',
+    'Gamepad': 'game-controller-outline',
+    'Book': 'book-outline',
+    'Medical': 'medical-outline',
+    'Restaurant': 'restaurant-outline',
+    'Film': 'film-outline',
+};
+
+const getCategoryIcon = (name: string) => {
+    if (!name || name === 'all') return 'list-outline';
+
+    const normalizedMatch = Object.keys(CATEGORY_ICONS).find(
+        key => key.toLowerCase() === name.toLowerCase()
+    );
+    if (normalizedMatch) return CATEGORY_ICONS[normalizedMatch];
+
+    return name;
+};
+
+interface CategoryItem {
+    id: string;
+    name: string;
+    value: string | null;
+    icon: string;
+}
 
 const { width, height } = Dimensions.get('window');
 
-const CATEGORIES = [
-    { id: '1', name: 'All', icon: 'grid-outline' },
-    { id: '2', name: 'Music', icon: 'musical-notes-outline' },
-    { id: '3', name: 'Tech', icon: 'hardware-chip-outline' },
-    { id: '4', name: 'Art', icon: 'color-palette-outline' },
-    { id: '5', name: 'Gaming', icon: 'game-controller-outline' },
-];
 
 const FEATURED_EVENTS = [];
 
@@ -36,13 +84,122 @@ const POPULAR_EVENTS = [];
 const Explore = () => {
     const { colors, theme } = useTheme();
     const navigation = useNavigation();
-    const [selectedCategory, setSelectedCategory] = useState('1');
+    const [selectedCategory, setSelectedCategory] = useState('all');
+    const [categories, setCategories] = useState<CategoryItem[]>([
+        { id: 'all', name: 'All', value: null, icon: 'grid-outline' }
+    ]);
+    const [categoriesLoading, setCategoriesLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [isFilterVisible, setIsFilterVisible] = useState(false);
+    const [featuredEvents, setFeaturedEvents] = useState<any[]>([]);
+    const [popularEvents, setPopularEvents] = useState<any[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     // Filter States
     const [priceRange, setPriceRange] = useState([0, 500]);
     const [selectedDate, setSelectedDate] = useState('Anytime');
+
+    // Fetch Categories
+    React.useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                setCategoriesLoading(true);
+                const response = await apiService.category.getPublicCategories();
+                if (response.success && response.data) {
+                    let categoriesArray: any[] = [];
+                    const dataObj = response.data as any;
+
+                    // Handle different response structures
+                    if (Array.isArray(dataObj)) {
+                        categoriesArray = dataObj;
+                    } else if (dataObj && typeof dataObj === 'object') {
+                        if ('content' in dataObj) {
+                            if (Array.isArray(dataObj.content)) {
+                                categoriesArray = dataObj.content;
+                            } else if (dataObj.content && typeof dataObj.content === 'object' && 'content' in dataObj.content) {
+                                categoriesArray = Array.isArray(dataObj.content.content) ? dataObj.content.content : [];
+                            }
+                        }
+                    }
+
+                    const dynamicCategories = categoriesArray
+                        .filter(cat => cat && cat.id && cat.name)
+                        .map((cat) => {
+                            return {
+                                id: String(cat.id),
+                                name: cat.name.charAt(0).toUpperCase() + cat.name.slice(1).toLowerCase(),
+                                value: cat.name,
+                                icon: getCategoryIcon(cat.iconName || cat.name)
+                            };
+                        });
+
+                    setCategories([
+                        { id: 'all', name: 'All', value: null, icon: 'grid-outline' },
+                        ...dynamicCategories
+                    ]);
+                }
+            } catch (err) {
+                console.error('Failed to fetch categories:', err);
+            } finally {
+                setCategoriesLoading(false);
+            }
+        };
+        fetchCategories();
+    }, []);
+
+    // Fetch Events
+    const fetchEvents = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            // Get selected category value
+            const selectedCat = categories.find(cat => cat.id === selectedCategory);
+            const categoryValue = selectedCat?.value || undefined;
+
+            // Use public endpoint that doesn't require authentication
+            // If a category is selected (not "All"), use getAllPublicEvents with category filter
+            const response = categoryValue
+                ? await apiService.event.getAllPublicEvents({
+                    category: categoryValue,
+                    page: 0,
+                    size: 20,
+                    sortBy: 'date',
+                    direction: 'ASC'
+                })
+                : await apiService.event.getScheduledPublicEvents({
+                    page: 0,
+                    size: 20,
+                    sortBy: 'date',
+                    direction: 'ASC'
+                });
+
+            if (response.success && response.data) {
+                let eventsArray: any[] = [];
+                const dataObj = response.data as any;
+
+                if (Array.isArray(dataObj)) {
+                    eventsArray = dataObj;
+                } else if (dataObj?.content) {
+                    eventsArray = Array.isArray(dataObj.content) ? dataObj.content : (dataObj.content.content || []);
+                }
+
+                const transformed = eventsArray.map(e => transformEvent(e));
+                setFeaturedEvents(transformed.slice(0, 5));
+                setPopularEvents(transformed.slice(0, 15)); // Also include all in popular for explore
+            }
+        } catch (err) {
+            console.error('Failed to fetch events:', err);
+            setError('Failed to load events');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    React.useEffect(() => {
+        fetchEvents();
+    }, [selectedCategory]);
 
     const renderCategory = ({ item }: { item: any }) => (
         <TouchableOpacity
@@ -84,7 +241,7 @@ const Explore = () => {
                 style={styles.featuredOverlay}
             >
                 <View style={styles.featuredContent}>
-                    <Text style={styles.featuredTitle}>{item.title}</Text>
+                    <Text style={styles.featuredTitle}>{item.name}</Text>
                     <View style={styles.featuredRow}>
                         <Ionicons name="calendar-outline" size={14} color={colors.primary} />
                         <Text style={[styles.featuredInfo, { color: colors.textSecondary }]}>{item.date}</Text>
@@ -95,7 +252,7 @@ const Explore = () => {
                     </View>
                 </View>
                 <View style={[styles.priceTag, { backgroundColor: colors.primary }]}>
-                    <Text style={styles.priceText}>{item.price}</Text>
+                    <Text style={styles.priceText}>{getEventPriceDisplay(item)}</Text>
                 </View>
             </LinearGradient>
         </TouchableOpacity>
@@ -109,11 +266,11 @@ const Explore = () => {
         >
             <Image source={{ uri: getEventImageUrl(item.image) }} style={styles.popularImage} />
             <View style={styles.popularContent}>
-                <Text style={[styles.popularTitle, { color: colors.text }]} numberOfLines={1}>{item.title}</Text>
+                <Text style={[styles.popularTitle, { color: colors.text }]} numberOfLines={1}>{item.name}</Text>
                 <Text style={[styles.popularDate, { color: colors.primary }]}>{item.date}</Text>
                 <Text style={[styles.popularLocation, { color: colors.textSecondary }]} numberOfLines={1}>{item.location}</Text>
                 <View style={styles.popularFooter}>
-                    <Text style={[styles.popularPrice, { color: colors.text }]}>{item.price}</Text>
+                    <Text style={[styles.popularPrice, { color: colors.text }]}>{getEventPriceDisplay(item)}</Text>
                     <TouchableOpacity style={[styles.bookButton, { backgroundColor: 'rgba(0, 255, 255, 0.1)' }]}>
                         <Text style={[styles.bookText, { color: colors.primary }]}>Book</Text>
                     </TouchableOpacity>
@@ -160,14 +317,18 @@ const Explore = () => {
 
                 {/* Categories */}
                 <View style={styles.categoriesContainer}>
-                    <FlatList
-                        data={CATEGORIES}
-                        renderItem={renderCategory}
-                        keyExtractor={item => item.id}
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={styles.categoriesList}
-                    />
+                    {categoriesLoading ? (
+                        <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: 10 }} />
+                    ) : (
+                        <FlatList
+                            data={categories}
+                            renderItem={renderCategory}
+                            keyExtractor={item => item.id}
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            contentContainerStyle={styles.categoriesList}
+                        />
+                    )}
                 </View>
 
                 {/* Featured Section */}
@@ -179,7 +340,7 @@ const Explore = () => {
                         </TouchableOpacity>
                     </View>
                     <FlatList
-                        data={FEATURED_EVENTS}
+                        data={featuredEvents}
                         renderItem={renderFeatured}
                         keyExtractor={item => item.id}
                         horizontal
@@ -199,7 +360,7 @@ const Explore = () => {
                         </TouchableOpacity>
                     </View>
                     <View style={styles.popularList}>
-                        {POPULAR_EVENTS.map(item => (
+                        {popularEvents.map(item => (
                             <View key={item.id} style={{ marginBottom: 16 }}>
                                 {renderPopular({ item })}
                             </View>

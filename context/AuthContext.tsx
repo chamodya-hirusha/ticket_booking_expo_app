@@ -227,6 +227,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const response = await apiService.register(name, password, email, phone);
 
             if (response.success) {
+                // Try to send verification code if registration was successful
+                try {
+                    await apiService.resendVerify(email);
+                } catch (e) {
+                    console.error('Failed to send verification code automatically:', e);
+                }
                 return { success: true };
             }
 
@@ -355,7 +361,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             if (user && !user.isVerified) {
                 toast.error('Your account is not verified. Please verify your email to access all features.');
             } else {
-                if (user && user.role !== 'USER' && user.role !== 'ADMIN' && user.role !== 'VENDOR') {
+                if (user && user.role !== 'USER' && user.role !== 'ADMIN') {
                     toast.error('Your account role is not recognized. Please contact support.');
                 }
             }

@@ -22,30 +22,81 @@ import { useFavorites } from '../context/FavoritesContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../context/AuthContext';
 import { apiService } from '../services/api';
+import { transformEvent, getEventPriceDisplay } from '../utils/event';
 
 const { width } = Dimensions.get('window');
 
-const CATEGORIES = [
-  { id: '1', name: 'All', value: null, icon: 'grid-outline' },
-  { id: '2', name: 'Music', value: 'MUSIC', icon: 'musical-notes-outline' },
-  { id: '3', name: 'Sports', value: 'SPORTS', icon: 'football-outline' },
-  { id: '4', name: 'Tech', value: 'TECH', icon: 'hardware-chip-outline' },
-  { id: '5', name: 'Art', value: 'ART', icon: 'color-palette-outline' },
-  { id: '6', name: 'Business', value: 'BUSINESS', icon: 'briefcase-outline' },
-];
+const CATEGORY_ICONS: Record<string, string> = {
+  'All': 'grid-outline',
+  'Music': 'musical-notes-outline',
+  'Sports': 'football-outline',
+  'Tech': 'hardware-chip-outline',
+  'Art': 'color-palette-outline',
+  'Business': 'briefcase-outline',
+  'Education': 'book-outline',
+  'Health': 'medical-outline',
+  'Food': 'restaurant-outline',
+  'Comedy': 'happy-outline',
+  'Games': 'game-controller-outline',
+  'Movies': 'film-outline',
+  'Theater': 'videocam-outline',
+  'MUSIC': 'musical-notes-outline',
+  'SPORTS': 'football-outline',
+  'THEATER': 'film-outline',
+  'CONCERT': 'musical-notes-outline',
+  'FESTIVAL': 'calendar-outline',
+  // Fix for invalid icon warnings
+  'Cpu': 'hardware-chip-outline',
+  'Trophy': 'trophy-outline',
+  'Palette': 'color-palette-outline',
+  'Briefcase': 'briefcase-outline',
+  'Utensils': 'restaurant-outline',
+  'PartyPopper': 'sparkles-outline',
+  'GraduationCap': 'school-outline',
+  'Gamepad': 'game-controller-outline',
+  'Book': 'book-outline',
+  'Medical': 'medical-outline',
+  'Restaurant': 'restaurant-outline',
+  'Film': 'film-outline',
+};
+
+const getCategoryIcon = (name: string) => {
+  if (!name || name === 'all') return 'list-outline';
+
+  const normalizedMatch = Object.keys(CATEGORY_ICONS).find(
+    key => key.toLowerCase() === name.toLowerCase()
+  );
+
+  // If it matches a category name (e.g. "Music"), return the mapped icon
+  if (normalizedMatch) return CATEGORY_ICONS[normalizedMatch];
+
+  // Otherwise, assume it's already a valid icon name
+  return name;
+};
+
+interface CategoryItem {
+  id: string;
+  name: string;
+  value: string | null;
+  icon: string;
+}
 
 const HomeScreen = () => {
   const navigation = useNavigation();
   const { colors, theme } = useTheme();
   const { isFavorite, toggleFavorite } = useFavorites();
   const { user, refreshUser, isAuthenticated } = useAuth();
-  const [selectedCategory, setSelectedCategory] = useState('1');
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [isFilterVisible, setIsFilterVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState('Anytime');
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(500);
   const [events, setEvents] = useState<Event[]>([]);
+  const [categories, setCategories] = useState<CategoryItem[]>([
+    { id: 'all', name: 'All', value: null, icon: 'grid-outline' }
+  ]);
   const [loading, setLoading] = useState(true);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   // Track which event images have failed to load
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
@@ -70,7 +121,7 @@ const HomeScreen = () => {
       setError(null);
 
       // Get selected category value
-      const selectedCat = CATEGORIES.find(cat => cat.id === selectedCategory);
+      const selectedCat = categories.find(cat => cat.id === selectedCategory);
       const categoryValue = selectedCat?.value || undefined;
 
       const searchParams: any = {
@@ -118,20 +169,8 @@ const HomeScreen = () => {
           }
         }
 
-        // Transform events (same as fetchEvents)
-        const transformedEvents = eventsArray.map((event: any) => {
-          const imageValue = (event.imageUrl && event.imageUrl.trim() !== '')
-            || (event.image_url && event.image_url.trim() !== '')
-            || (event.image && event.image.trim() !== '')
-            ? (event.imageUrl || event.image_url || event.image)
-            : null;
-
-          return {
-            ...event,
-            id: String(event.id),
-            image: imageValue,
-          };
-        });
+        // Transform events
+        const transformedEvents = eventsArray.map((event: any) => transformEvent(event));
 
         setEvents(transformedEvents);
       } else {
@@ -189,6 +228,51 @@ const HomeScreen = () => {
     }
   }, [isAuthenticated]);
 
+  // Fetch Categories
+  const fetchCategories = async () => {
+    try {
+      setCategoriesLoading(true);
+      const response = await apiService.category.getPublicCategories();
+      if (response.success && response.data) {
+        let categoriesArray: any[] = [];
+        const dataObj = response.data as any;
+
+        // Handle different response structures
+        if (Array.isArray(dataObj)) {
+          categoriesArray = dataObj;
+        } else if (dataObj && typeof dataObj === 'object') {
+          if ('content' in dataObj) {
+            if (Array.isArray(dataObj.content)) {
+              categoriesArray = dataObj.content;
+            } else if (dataObj.content && typeof dataObj.content === 'object' && 'content' in dataObj.content) {
+              categoriesArray = Array.isArray(dataObj.content.content) ? dataObj.content.content : [];
+            }
+          }
+        }
+
+        const dynamicCategories = categoriesArray
+          .filter(cat => cat && cat.id && cat.name)
+          .map((cat) => {
+            return {
+              id: String(cat.id),
+              name: cat.name.charAt(0).toUpperCase() + cat.name.slice(1).toLowerCase(),
+              value: cat.name,
+              icon: getCategoryIcon(cat.iconName || cat.name)
+            };
+          });
+
+        setCategories([
+          { id: 'all', name: 'All', value: null, icon: 'grid-outline' },
+          ...dynamicCategories
+        ]);
+      }
+    } catch (err) {
+      console.error('Failed to fetch categories:', err);
+    } finally {
+      setCategoriesLoading(false);
+    }
+  };
+
   // Helper function to fetch events with improved error handling
   const fetchEvents = async (showLoading: boolean = true) => {
     try {
@@ -198,7 +282,7 @@ const HomeScreen = () => {
       setError(null);
 
       // Get selected category value
-      const selectedCat = CATEGORIES.find(cat => cat.id === selectedCategory);
+      const selectedCat = categories.find(cat => cat.id === selectedCategory);
       const categoryValue = selectedCat?.value || undefined;
 
       // Use public endpoint that doesn't require authentication
@@ -283,30 +367,8 @@ const HomeScreen = () => {
         if (eventsArray.length > 0) {
           // Validate and transform events
           const transformedEvents = eventsArray
-            .filter((event: any) => {
-              // Basic validation: event must have id and name
-              const isValid = event &&
-                (event.id !== null && event.id !== undefined) &&
-                (event.name !== null && event.name !== undefined);
-
-              return isValid;
-            })
-            .map((event: any) => {
-           
-              const imageValue = (event.imageUrl && event.imageUrl.trim() !== '')
-                || (event.image_url && event.image_url.trim() !== '')
-                || (event.image && event.image.trim() !== '')
-                ? (event.imageUrl || event.image_url || event.image)
-                : null;
-
-
-
-              return {
-                ...event,
-                id: String(event.id), 
-                image: imageValue,
-              };
-            });
+            .filter((event: any) => event && (event.id !== null || event.name !== null))
+            .map((event: any) => transformEvent(event));
 
           if (transformedEvents.length > 0) {
             setEvents(transformedEvents);
@@ -341,8 +403,8 @@ const HomeScreen = () => {
       if (searchQuery.trim()) {
         await performSearch(searchQuery);
       } else {
-     
-        await fetchEvents(false); 
+
+        await fetchEvents(false);
       }
     } catch (err) {
 
@@ -352,11 +414,15 @@ const HomeScreen = () => {
   }, [searchQuery, performSearch]);
 
   useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
     if (!searchQuery.trim()) {
       fetchEvents();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCategory]);
+  }, [selectedCategory, categories]);
 
   // Helper function to format date and time
   const formatEventDateTime = (date: string, startTime?: string) => {
@@ -378,14 +444,7 @@ const HomeScreen = () => {
 
   // Helper function to get price display
   const getPriceDisplay = (item: Event) => {
-    const prices = [item.generalTicketPrice, item.premiumTicketPrice, item.vipTicketPrice].filter(p => p > 0);
-    if (prices.length === 0) return 'Free';
-    const minPrice = Math.min(...prices);
-    const maxPrice = Math.max(...prices);
-    if (minPrice === maxPrice) {
-      return `$${minPrice.toFixed(0)}`;
-    }
-    return `$${minPrice.toFixed(0)} - $${maxPrice.toFixed(0)}`;
+    return getEventPriceDisplay(item);
   };
 
   const renderEventItem = ({ item }: { item: Event }) => {
@@ -576,40 +635,44 @@ const HomeScreen = () => {
 
         {/* Categories */}
         <View style={styles.categoriesSection}>
-          <FlatList
-            horizontal
-            data={CATEGORIES}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[
-                  styles.categoryChip,
-                  {
-                    backgroundColor: selectedCategory === item.id ? colors.primary : colors.surface,
-                    borderColor: selectedCategory === item.id ? colors.primary : colors.border
-                  }
-                ]}
-                onPress={() => setSelectedCategory(item.id)}
-              >
-                <Ionicons
-                  name={item.icon as any}
-                  size={18}
-                  color={selectedCategory === item.id ? (theme === 'dark' ? '#000' : '#fff') : colors.textSecondary}
-                  style={{ marginRight: 6 }}
-                />
-                <Text
+          {categoriesLoading ? (
+            <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: 10 }} />
+          ) : (
+            <FlatList
+              horizontal
+              data={categories}
+              renderItem={({ item }) => (
+                <TouchableOpacity
                   style={[
-                    styles.categoryText,
-                    { color: selectedCategory === item.id ? (theme === 'dark' ? '#000' : '#fff') : colors.textSecondary }
+                    styles.categoryChip,
+                    {
+                      backgroundColor: selectedCategory === item.id ? colors.primary : colors.surface,
+                      borderColor: selectedCategory === item.id ? colors.primary : colors.border
+                    }
                   ]}
+                  onPress={() => setSelectedCategory(item.id)}
                 >
-                  {item.name}
-                </Text>
-              </TouchableOpacity>
-            )}
-            keyExtractor={item => item.id}
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categoriesList}
-          />
+                  <Ionicons
+                    name={item.icon as any}
+                    size={18}
+                    color={selectedCategory === item.id ? (theme === 'dark' ? '#000' : '#fff') : colors.textSecondary}
+                    style={{ marginRight: 6 }}
+                  />
+                  <Text
+                    style={[
+                      styles.categoryText,
+                      { color: selectedCategory === item.id ? (theme === 'dark' ? '#000' : '#fff') : colors.textSecondary }
+                    ]}
+                  >
+                    {item.name}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              keyExtractor={item => item.id}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.categoriesList}
+            />
+          )}
         </View>
 
         {/* Featured Events */}
@@ -618,7 +681,7 @@ const HomeScreen = () => {
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Featured Events</Text>
             {events.length > 0 && (
               <TouchableOpacity onPress={() => {
-                const selectedCat = CATEGORIES.find(cat => cat.id === selectedCategory);
+                const selectedCat = categories.find(cat => cat.id === selectedCategory);
                 (navigation as any).navigate('SeeAll', {
                   title: 'Featured Events',
                   data: events,
@@ -670,7 +733,7 @@ const HomeScreen = () => {
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Popular Near You</Text>
             {events.length > 0 && (
               <TouchableOpacity onPress={() => {
-                const selectedCat = CATEGORIES.find(cat => cat.id === selectedCategory);
+                const selectedCat = categories.find(cat => cat.id === selectedCategory);
                 (navigation as any).navigate('SeeAll', {
                   title: 'Popular Near You',
                   data: events,
@@ -733,36 +796,20 @@ const HomeScreen = () => {
               {/* Category */}
               <Text style={[styles.filterLabel, { color: colors.textSecondary, marginTop: 20 }]}>Category</Text>
               <View style={styles.filterOptions}>
-                <TouchableOpacity
-                  style={[
-                    styles.filterChip,
-                    {
-                      backgroundColor: searchCategory === null ? colors.primary : colors.inputBackground,
-                      borderColor: searchCategory === null ? colors.primary : colors.border
-                    }
-                  ]}
-                  onPress={() => setSearchCategory(null)}
-                >
-                  <Text style={{
-                    color: searchCategory === null ? (theme === 'dark' ? '#000' : '#fff') : colors.text
-                  }}>
-                    All
-                  </Text>
-                </TouchableOpacity>
-                {CATEGORIES.filter(cat => cat.value !== null).map((cat) => (
+                {categories.map((cat) => (
                   <TouchableOpacity
                     key={cat.id}
                     style={[
                       styles.filterChip,
                       {
-                        backgroundColor: searchCategory === cat.value ? colors.primary : colors.inputBackground,
-                        borderColor: searchCategory === cat.value ? colors.primary : colors.border
+                        backgroundColor: (searchCategory === cat.value || (searchCategory === null && cat.value === null)) ? colors.primary : colors.inputBackground,
+                        borderColor: (searchCategory === cat.value || (searchCategory === null && cat.value === null)) ? colors.primary : colors.border
                       }
                     ]}
-                    onPress={() => setSearchCategory(cat.value || null)}
+                    onPress={() => setSearchCategory(cat.value)}
                   >
                     <Text style={{
-                      color: searchCategory === cat.value ? (theme === 'dark' ? '#000' : '#fff') : colors.text
+                      color: (searchCategory === cat.value || (searchCategory === null && cat.value === null)) ? (theme === 'dark' ? '#000' : '#fff') : colors.text
                     }}>
                       {cat.name}
                     </Text>

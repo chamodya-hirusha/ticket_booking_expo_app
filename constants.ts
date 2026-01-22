@@ -1,6 +1,7 @@
 // API Configuration
 export const API_CONFIG = {
-  BASE_URL: process.env.EXPO_PUBLIC_API_BASE_URL || 'https://tickbookapi.braintisa.com/api',
+  // BASE_URL: process.env.EXPO_PUBLIC_API_BASE_URL || 'https://tickbookapi.braintisa.com/api',
+  BASE_URL: process.env.EXPO_PUBLIC_API_BASE_URL || 'http://192.168.1.2:8090/api',
   TIMEOUT: 30000, // 30 seconds
 };
 
@@ -11,6 +12,13 @@ export const STRIPE_CONFIG = {
 
 
 
+export interface TicketTypeInfo {
+  id: number;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
 export interface Event {
   id: string;
   name: string;
@@ -19,6 +27,7 @@ export interface Event {
   location: string;
   date: string;
   startTime: string;
+  ticketTypes?: TicketTypeInfo[];
   vipTicketLimit: number;
   premiumTicketLimit: number;
   generalTicketLimit: number;

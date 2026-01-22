@@ -7,7 +7,8 @@ import {
     Modal,
     Dimensions,
     Animated,
-    Pressable
+    Pressable,
+    ActivityIndicator
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
@@ -30,6 +31,7 @@ export const BiometricModal: React.FC<BiometricModalProps> = ({
 }) => {
     const { colors, theme } = useTheme();
     const [supportedTypes, setSupportedTypes] = useState<LocalAuthentication.AuthenticationType[]>([]);
+    const [loading, setLoading] = useState(true);
     const [scaleAnim] = useState(new Animated.Value(0.9));
     const [fadeAnim] = useState(new Animated.Value(0));
 
@@ -55,8 +57,13 @@ export const BiometricModal: React.FC<BiometricModalProps> = ({
     }, [visible]);
 
     const checkSupportedBiometrics = async () => {
-        const types = await LocalAuthentication.supportedAuthenticationTypesAsync();
-        setSupportedTypes(types);
+        setLoading(true);
+        try {
+            const types = await LocalAuthentication.supportedAuthenticationTypesAsync();
+            setSupportedTypes(types);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const hasFace = supportedTypes.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION);
@@ -109,26 +116,35 @@ export const BiometricModal: React.FC<BiometricModalProps> = ({
                     </Text>
 
                     <View style={styles.buttonContainer}>
-                        {hasFace && (
-                            <TouchableOpacity
-                                style={[styles.authButton, { backgroundColor: colors.primary }]}
-                                onPress={() => handleAuthenticate(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)}
-                                activeOpacity={0.8}
-                            >
-                                <MaterialCommunityIcons name="face-recognition" size={26} color="#FFF" style={styles.buttonIcon} />
-                                <Text style={styles.authButtonText}>Face Unlock</Text>
-                            </TouchableOpacity>
-                        )}
+                        {loading ? (
+                            <View style={styles.loadingContainer}>
+                                <ActivityIndicator size="large" color={colors.primary} />
+                                <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+                                    Checking biometric options...
+                                </Text>
+                            </View>
+                        ) : (
+                            <>
+                                <TouchableOpacity
+                                    style={[styles.authButton, { backgroundColor: colors.primary }]}
+                                    onPress={() => handleAuthenticate(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)}
+                                    activeOpacity={0.8}
+                                >
+                                    <MaterialCommunityIcons name="face-recognition" size={26} color="#FFF" style={styles.buttonIcon} />
+                                    <Text style={styles.authButtonText}>Face Unlock</Text>
+                                </TouchableOpacity>
 
-                        {hasFingerprint && (
-                            <TouchableOpacity
-                                style={[styles.authButton, { backgroundColor: colors.primary }]}
-                                onPress={() => handleAuthenticate(LocalAuthentication.AuthenticationType.FINGERPRINT)}
-                                activeOpacity={0.8}
-                            >
-                                <MaterialCommunityIcons name="fingerprint" size={26} color="#FFF" style={styles.buttonIcon} />
-                                <Text style={styles.authButtonText}>Fingerprint</Text>
-                            </TouchableOpacity>
+                                {hasFingerprint && (
+                                    <TouchableOpacity
+                                        style={[styles.authButton, { backgroundColor: colors.primary }]}
+                                        onPress={() => handleAuthenticate(LocalAuthentication.AuthenticationType.FINGERPRINT)}
+                                        activeOpacity={0.8}
+                                    >
+                                        <MaterialCommunityIcons name="fingerprint" size={26} color="#FFF" style={styles.buttonIcon} />
+                                        <Text style={styles.authButtonText}>Fingerprint</Text>
+                                    </TouchableOpacity>
+                                )}
+                            </>
                         )}
                     </View>
                 </Animated.View>
@@ -185,6 +201,16 @@ const styles = StyleSheet.create({
     buttonContainer: {
         width: '100%',
         gap: 12,
+    },
+    loadingContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 20,
+    },
+    loadingText: {
+        fontSize: 16,
+        marginTop: 10,
+        textAlign: 'center',
     },
     authButton: {
         flexDirection: 'row',

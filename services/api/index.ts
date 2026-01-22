@@ -7,6 +7,7 @@ import { EventApiService } from './event';
 import { PaymentApiService } from './payment';
 import { ReservationApiService } from './reservation';
 import { ScanApiService } from './scan';
+import { CategoryApiService } from './category';
 
 // Export all types
 export * from './types';
@@ -16,18 +17,21 @@ export * from './scan';
 class ApiService extends AuthApiService {
   // User API methods
   public user: UserApiService;
-  
+
   // Event API methods
   public event: EventApiService;
-  
+
   // Payment API methods
   public payment: PaymentApiService;
-  
+
   // Reservation API methods
   public reservation: ReservationApiService;
 
   // Scan API methods
   public scan: ScanApiService;
+
+  // Category API methods
+  public category: CategoryApiService;
 
   // Auth API methods (accessible directly)
   public auth: AuthApiService;
@@ -39,6 +43,7 @@ class ApiService extends AuthApiService {
     this.payment = new PaymentApiService();
     this.reservation = new ReservationApiService();
     this.scan = new ScanApiService();
+    this.category = new CategoryApiService();
     this.auth = this; // Auth methods are inherited, but we can also access via this.auth
   }
   async getUser(userId?: string | number) {
@@ -139,7 +144,7 @@ class ApiService extends AuthApiService {
   async createStripePayment(
     reservationId: number,
     amount: number,
-    currency: string = 'USD',
+    currency: string = 'EUR',
     userId: string | number
   ) {
     return this.payment.createStripePayment(reservationId, amount, currency, userId);
@@ -153,35 +158,24 @@ class ApiService extends AuthApiService {
   async createReservation(
     eventId: number,
     ticketType: string,
-    ticketCount: number,
-    ticketPrice: number,
-    userId: string | number,
-    userRole: string
+    ticketCount: number
   ) {
-    return this.reservation.createReservation(eventId, ticketType, ticketCount, ticketPrice, userId, userRole);
+    return this.reservation.createReservation(eventId, ticketType, ticketCount);
   }
 
-  async getReservationById(reservationId: number) {
-    return this.reservation.getReservationById(reservationId);
-  }
 
   async getUserReservations(params?: any) {
     return this.reservation.getUserReservations(params);
   }
 
-  async getReservationsByStatus(status: any, params?: any) {
-    return this.reservation.getReservationsByStatus(status, params);
-  }
+
 
   async cancelReservation(
     eventId: number,
     ticketType: string,
-    ticketCount: number,
-    ticketPrice: number,
-    userId: string | number,
-    userRole: string
+    ticketCount: number
   ) {
-    return this.reservation.cancelReservation(eventId, ticketType, ticketCount, ticketPrice, userId, userRole);
+    return this.reservation.cancelReservation(eventId, ticketType, ticketCount);
   }
 }
 
@@ -195,4 +189,5 @@ export const eventApi = new EventApiService();
 export const paymentApi = new PaymentApiService();
 export const reservationApi = new ReservationApiService();
 export const scanApi = new ScanApiService();
+export const categoryApi = new CategoryApiService();
 

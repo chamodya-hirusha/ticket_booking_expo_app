@@ -7,7 +7,8 @@ import {
     ScrollView,
     Dimensions,
     Platform,
-    Alert
+    Alert,
+    ActivityIndicator
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, Feather } from '@expo/vector-icons';
@@ -15,6 +16,8 @@ import { useTheme } from '../context/ThemeContext';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Event } from '../constants';
+import { formatPrice } from '../utils/event';
+import { apiService } from '../services/api';
 
 const { width } = Dimensions.get('window');
 
@@ -32,22 +35,22 @@ interface TicketType {
 // Base ticket type structure (prices will be loaded from event)
 const BASE_TICKET_TYPES: Omit<TicketType, 'price'>[] = [
     {
-        id: 'vip',
+        id: 'VIP',
         name: 'VIP',
         features: ['Front Row Access', 'Meet & Greet', 'Exclusive Merchandise', 'VIP Lounge Access'],
         color: '#FFD700',
         icon: 'star'
     },
     {
-        id: 'premium',
+        id: 'PREMIUM',
         name: 'Premium',
         features: ['Premium Seating', 'Fast Track Entry', 'Complimentary Drink', 'Reserved Parking'],
         color: '#C0C0C0',
         icon: 'award'
     },
     {
-        id: 'standard',
-        name: 'Standard',
+        id: 'GENERAL',
+        name: 'General',
         features: ['General Admission', 'Standard Seating', 'Event Access'],
         color: '#CD7F32',
         icon: 'tag'
@@ -60,46 +63,93 @@ const TicketSelection = () => {
     const route = useRoute<TicketSelectionRouteProp>();
     const { event } = route.params;
 
+    const [availableTypes, setAvailableTypes] = useState<string[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    // Fetch available ticket types from API
+    React.useEffect(() => {
+        const fetchTicketTypes = async () => {
+            try {
+                const response = await apiService.reservation.getTicketTypes();
+                if (response.success && response.data) {
+                    setAvailableTypes(response.data);
+                } else {
+                    // Fallback to defaults if API fails
+                    setAvailableTypes(['VIP', 'PREMIUM', 'GENERAL']);
+                }
+            } catch (error) {
+                console.error('Error fetching ticket types:', error);
+                setAvailableTypes(['VIP', 'PREMIUM', 'GENERAL']);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchTicketTypes();
+    }, []);
+
     // Load ticket types with actual prices from event
     const getTicketTypes = (): TicketType[] => {
-        return BASE_TICKET_TYPES.map(baseTicket => {
-            let price = 0;
-            
-            switch (baseTicket.id) {
-                case 'vip':
-                    price = event?.vipTicketPrice || 0;
-                    break;
-                case 'premium':
-                    price = event?.premiumTicketPrice || 0;
-                    break;
-                case 'standard':
-                    price = event?.generalTicketPrice || 0;
-                    break;
-            }
+        // Source of truth: event.ticketTypes from backend
+        if (event.ticketTypes && event.ticketTypes.length > 0) {
+            return event.ticketTypes.map(tt => {
+                const nameUpper = tt.name.toUpperCase();
+                const base = BASE_TICKET_TYPES.find(b => b.id === nameUpper) || {
+                    id: nameUpper,
+                    name: tt.name,
+                    features: ['Event Access'],
+                    color: '#94a3b8',
+                    icon: 'tag'
+                };
 
-            // Fallback to default prices if event prices are 0 or missing
-            if (price === 0) {
+                return {
+                    ...base,
+                    price: tt.price
+                };
+            });
+        }
+
+        // Fallback to old logic if ticketTypes is not present
+        return BASE_TICKET_TYPES
+            .filter(base => availableTypes.includes(base.id))
+            .map(baseTicket => {
+                let price = 0;
+
                 switch (baseTicket.id) {
-                    case 'vip':
-                        price = 299;
+                    case 'VIP':
+                        price = event?.vipTicketPrice || 0;
                         break;
-                    case 'premium':
-                        price = 149;
+                    case 'PREMIUM':
+                        price = event?.premiumTicketPrice || 0;
                         break;
-                    case 'standard':
-                        price = 79;
+                    case 'GENERAL':
+                        price = event?.generalTicketPrice || 0;
                         break;
                 }
-            }
 
-            return {
-                ...baseTicket,
-                price
-            };
-        });
+                // Fallback to default prices if event prices are 0 or missing
+                if (price === 0) {
+                    switch (baseTicket.id) {
+                        case 'VIP':
+                            price = 299;
+                            break;
+                        case 'PREMIUM':
+                            price = 149;
+                            break;
+                        case 'GENERAL':
+                            price = 79;
+                            break;
+                    }
+                }
+
+                return {
+                    ...baseTicket,
+                    price
+                };
+            });
     };
 
-    const TICKET_TYPES = useMemo(() => getTicketTypes(), [event]);
+    const TICKET_TYPES = useMemo(() => getTicketTypes(), [event, availableTypes]);
 
     // Log ticket types for debugging
     React.useEffect(() => {
@@ -107,11 +157,16 @@ const TicketSelection = () => {
         }
     }, [event, TICKET_TYPES]);
 
-    const [ticketCounts, setTicketCounts] = useState<{ [key: string]: number }>({
-        vip: 0,
-        premium: 0,
-        standard: 0
-    });
+    const [ticketCounts, setTicketCounts] = useState<{ [key: string]: number }>({});
+
+    // Initialize ticket counts when TICKET_TYPES changes
+    React.useEffect(() => {
+        const initialCounts: { [key: string]: number } = {};
+        TICKET_TYPES.forEach(tt => {
+            initialCounts[tt.id] = 0;
+        });
+        setTicketCounts(initialCounts);
+    }, [TICKET_TYPES]);
 
     const incrementTicket = (id: string) => {
         const hasOtherTickets = Object.keys(ticketCounts).some(key => key !== id && ticketCounts[key] > 0);
@@ -126,7 +181,7 @@ const TicketSelection = () => {
 
         setTicketCounts(prev => ({
             ...prev,
-            [id]: Math.min((prev[id] || 0) + 1, 10) 
+            [id]: Math.min((prev[id] || 0) + 1, 10)
         }));
     };
 
@@ -155,7 +210,7 @@ const TicketSelection = () => {
             }));
 
         if (selectedTickets.length === 0) {
-            return; 
+            return;
         }
 
         (navigation as any).navigate('ConfirmPay', {
@@ -164,6 +219,15 @@ const TicketSelection = () => {
             total: calculateTotal()
         });
     };
+
+    if (loading) {
+        return (
+            <SafeAreaView style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
+                <ActivityIndicator size="large" color={colors.primary} />
+                <Text style={{ color: colors.text, marginTop: 16 }}>Loading ticket types...</Text>
+            </SafeAreaView>
+        );
+    }
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -228,7 +292,7 @@ const TicketSelection = () => {
                                 </View>
                                 <View style={styles.ticketTitleContainer}>
                                     <Text style={[styles.ticketName, { color: colors.text }]}>{ticket.name}</Text>
-                                    <Text style={[styles.ticketPrice, { color: colors.primary }]}>${ticket.price}</Text>
+                                    <Text style={[styles.ticketPrice, { color: colors.primary }]}>{formatPrice(ticket.price)}</Text>
                                 </View>
                             </View>
                         </View>
@@ -285,7 +349,7 @@ const TicketSelection = () => {
                                 {getTotalTickets()} {getTotalTickets() === 1 ? 'Ticket' : 'Tickets'}
                             </Text>
                             <Text style={[styles.totalAmount, { color: colors.text }]}>
-                                ${calculateTotal().toFixed(2)}
+                                {formatPrice(calculateTotal())}
                             </Text>
                         </View>
                         <TouchableOpacity

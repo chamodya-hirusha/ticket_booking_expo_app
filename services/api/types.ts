@@ -192,6 +192,23 @@ export interface ReservationRequestDTO {
   // Note: ticketPrice is NOT sent to API - backend calculates it from event
 }
 
+export interface QrCheckInRequestDTO {
+  qrToken: string;
+}
+
+export interface TicketTypeStats {
+  sold: number;
+  scanned: number;
+  total: number;
+}
+
+export interface TicketStatsResponse {
+  vip: TicketTypeStats;
+  premium: TicketTypeStats;
+  general: TicketTypeStats;
+  latestScans: any[]; // Assuming array of scan records, type not specified
+}
+
 export interface Reservation {
   id: number;
   eventId: number;
@@ -213,3 +230,22 @@ export interface ReservationStatusParams {
   sort?: string; // e.g., "id,asc" or "id,desc"
 }
 
+// ========== CATEGORY TYPES ==========
+
+export interface Category {
+  id: number;
+  name: string;
+  description: string;
+  iconName?: string;
+  iconUrl?: string;
+}
+
+export interface CategoryCreateRequest {
+  name: string;
+  description: string;
+}
+
+export interface CategoryUpdateRequest {
+  name: string;
+  description: string;
+}

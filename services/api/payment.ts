@@ -5,7 +5,7 @@ export class PaymentApiService extends BaseApiService {
   async createStripePayment(
     reservationId: number,
     amount: number,
-    currency: string = 'USD',
+    currency: string = 'EUR',
     userId: string | number
   ): Promise<ApiResponse<StripePaymentResponse>> {
     const requestBody: StripePaymentRequest = {
@@ -50,7 +50,7 @@ export class PaymentApiService extends BaseApiService {
   async paymentHealthCheck(): Promise<ApiResponse<string>> {
     try {
       const token = await this.getToken();
-      
+
       const headers: HeadersInit = {
         ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
       };

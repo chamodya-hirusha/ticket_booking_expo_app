@@ -17,6 +17,7 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Event, getEventImageUrl } from '../constants';
 import { useFavorites } from '../context/FavoritesContext';
 import { apiService } from '../services/api';
+import { transformEvent } from '../utils/event';
 
 type SeeAllRouteProp = RouteProp<{
     SeeAll: {
@@ -146,26 +147,8 @@ const SeeAll = () => {
                 if (eventsArray.length > 0) {
                     // Transform events
                     const transformedEvents = eventsArray
-                        .filter((event: any) => event && event.id && event.name)
-                        .map((event: any) => {
-                            const imageValue = event.imageUrl || event.image_url || event.image || null;
-
-                            if (__DEV__) {
-                                if (!imageValue) {
-                                    console.warn('[SeeAll] No image field found:', {
-                                        eventId: event.id,
-                                        eventName: event.name,
-                                        eventKeys: Object.keys(event),
-                                    });
-                                }
-                            }
-
-                            return {
-                                ...event,
-                                id: String(event.id),
-                                image: imageValue,
-                            };
-                        });
+                        .filter((event: any) => event && (event.id || event.name))
+                        .map((event: any) => transformEvent(event));
                     if (!initialData || pageNum !== 0) {
                         setEvents(transformedEvents);
                     }
@@ -525,7 +508,7 @@ const styles = StyleSheet.create({
     },
     listContent: {
         padding: 20,
-        paddingBottom: 110, 
+        paddingBottom: 110,
     },
     loadingOverlay: {
         position: 'absolute',

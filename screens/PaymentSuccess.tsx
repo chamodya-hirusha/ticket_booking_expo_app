@@ -15,7 +15,9 @@ import { useTheme } from '../context/ThemeContext';
 import { Event } from '../constants';
 import { Reservation, StripePaymentResponse } from '../services/api/types';
 import { notificationService } from '../services/notifications';
+import { formatPrice } from '../utils/event';
 import { apiService } from '../services/api';
+
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -462,7 +464,7 @@ const PaymentSuccess = () => {
                <View style={[styles.separator, { backgroundColor: colors.border }]} />
                <View style={styles.totalRow}>
                   <Text style={[styles.totalLabel, { color: colors.textSecondary }]}>Total</Text>
-                  <Text style={[styles.totalValue, { color: colors.text }]}>${total.toFixed(2)}</Text>
+                  <Text style={[styles.totalValue, { color: colors.text }]}>{formatPrice(total)}</Text>
                </View>
             </View>
 

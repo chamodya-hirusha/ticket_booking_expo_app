@@ -1,5 +1,5 @@
 import { BaseApiService } from './base';
-import { ApiResponse, Reservation, ReservationRequestDTO, ReservationStatus, ReservationStatusParams, PaginatedResponse } from './types';
+import { ApiResponse, Reservation, ReservationRequestDTO, ReservationStatus, PaginatedResponse, QrCheckInRequestDTO, TicketStatsResponse } from './types';
 
 export class ReservationApiService extends BaseApiService {
   // ========== RESERVATION API METHODS (Reservation Service) ==========
@@ -7,12 +7,9 @@ export class ReservationApiService extends BaseApiService {
   async createReservation(
     eventId: number,
     ticketType: string,
-    ticketCount: number,
-    ticketPrice: number, 
-    userId: string | number,
-    userRole: string
+    ticketCount: number
   ): Promise<ApiResponse<Reservation>> {
-    const requestBody = {
+    const requestBody: ReservationRequestDTO = {
       eventId,
       ticketType,
       ticketCount,
@@ -24,22 +21,27 @@ export class ReservationApiService extends BaseApiService {
     });
   }
 
-  async getReservationById(reservationId: number): Promise<ApiResponse<Reservation>> {
-    return this.request<Reservation>(`/v1/reservation/${reservationId}`, {
-      method: 'GET',
+  async checkIn(qrToken: string): Promise<ApiResponse<string>> {
+    const requestBody: QrCheckInRequestDTO = {
+      qrToken,
+    };
+
+    return this.request<string>('/v1/reservation/check-in', {
+      method: 'POST',
+      body: JSON.stringify(requestBody),
     });
   }
 
-  async getUserReservations(params?: ReservationStatusParams & { sortBy?: string; direction?: 'ASC' | 'DESC' }): Promise<ApiResponse<PaginatedResponse<Reservation>>> {
+  async getUserReservations(params?: { page?: number; size?: number; sortBy?: string; direction?: 'ASC' | 'DESC' }): Promise<ApiResponse<PaginatedResponse<Reservation>>> {
     const queryString = this.buildQueryString(params || {});
     return this.request<PaginatedResponse<Reservation>>(`/v1/reservation/user-reservations${queryString}`, {
       method: 'GET',
     });
   }
 
-  async getReservationsByStatus(status: ReservationStatus, params?: ReservationStatusParams): Promise<ApiResponse<PaginatedResponse<Reservation>>> {
+  async getRefundAvailableReservations(params?: { page?: number; size?: number; sortBy?: string; direction?: 'ASC' | 'DESC' }): Promise<ApiResponse<PaginatedResponse<Reservation>>> {
     const queryString = this.buildQueryString(params || {});
-    return this.request<PaginatedResponse<Reservation>>(`/v1/reservation/status/${status}${queryString}`, {
+    return this.request<PaginatedResponse<Reservation>>(`/v1/reservation/refund-available${queryString}`, {
       method: 'GET',
     });
   }
@@ -47,55 +49,43 @@ export class ReservationApiService extends BaseApiService {
   async cancelReservation(
     eventId: number,
     ticketType: string,
-    ticketCount: number,
-    ticketPrice: number, 
-    userId: string | number,
-    userRole: string
-  ): Promise<ApiResponse<any>> {
-    const requestBody = {
+    ticketCount: number
+  ): Promise<ApiResponse<string>> {
+    const requestBody: ReservationRequestDTO = {
       eventId,
       ticketType,
       ticketCount,
     };
 
-    return this.request<any>('/v1/reservation/cancel', {
+    return this.request<string>('/v1/reservation/event-cancel', {
       method: 'POST',
       body: JSON.stringify(requestBody),
     });
   }
 
-  async reservationHealthCheck(): Promise<ApiResponse<string>> {
-    try {
-      const token = await this.getToken();
-      
-      const headers: HeadersInit = {
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-      };
+  async getTicketStatistics(eventId: number): Promise<ApiResponse<TicketStatsResponse>> {
+    return this.request<TicketStatsResponse>(`/v1/reservation/stats/${eventId}`, {
+      method: 'GET',
+    });
+  }
 
-      const response = await fetch(`${this.baseURL}/v1/reservation/health`, {
-        method: 'GET',
-        headers,
-      });
+  async getAllReservations(params?: { page?: number; size?: number; sortBy?: string; direction?: 'ASC' | 'DESC' }): Promise<ApiResponse<PaginatedResponse<Reservation>>> {
+    const queryString = this.buildQueryString(params || {});
+    return this.request<PaginatedResponse<Reservation>>(`/v1/reservation/all${queryString}`, {
+      method: 'GET',
+    });
+  }
 
-      const text = await response.text();
+  async getTicketTypes(): Promise<ApiResponse<string[]>> {
+    return this.request<string[]>('/v1/reservation/ticket-types', {
+      method: 'GET',
+    });
+  }
 
-      if (!response.ok) {
-        return {
-          success: false,
-          error: `HTTP error! status: ${response.status}`,
-        };
-      }
-
-      return {
-        success: true,
-        data: text,
-      };
-    } catch (error: any) {
-      return {
-        success: false,
-        error: error.message || 'Network error. Please check your connection.',
-      };
-    }
+  async getReservationById(reservationId: number | string): Promise<ApiResponse<Reservation>> {
+    return this.request<Reservation>(`/v1/reservation/${reservationId}`, {
+      method: 'GET',
+    });
   }
 }
 
