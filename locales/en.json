@@ -1,0 +1,106 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "logout": "Logout",
+    "save": "Save",
+    "edit": "Edit",
+    "back": "Back",
+    "error": "Error",
+    "success": "Success",
+    "noData": "No data found"
+  },
+  "tabs": {
+    "home": "Home",
+    "favorites": "Favorites",
+    "tickets": "Tickets",
+    "profile": "Profile"
+  },
+  "profile": {
+    "title": "My Profile",
+    "account": "ACCOUNT",
+    "accountDetails": "Account Details",
+    "notifications": "Notifications",
+    "helpSupport": "Help & Support",
+    "theme": "Theme",
+    "dark": "Dark",
+    "light": "Light",
+    "paymentHistory": "PAYMENT HISTORY",
+    "noPaymentHistory": "No payment history found",
+    "loadingProfile": "Loading profile...",
+    "logoutConfirm": "Are you sure you want to logout?",
+    "guestUser": "Guest User",
+    "paid": "Paid",
+    "pending": "Pending",
+    "refunded": "Refunded",
+    "failed": "Failed"
+  },
+  "home": {
+    "welcome": "Welcome",
+    "featuredEvents": "Featured Events",
+    "upcomingEvents": "Upcoming Events",
+    "seeAll": "See All",
+    "searchPlaceholder": "Search events...",
+    "noEvents": "No events available",
+    "categories": "Categories"
+  },
+  "favorites": {
+    "title": "Favorites",
+    "noFavorites": "No favorites yet",
+    "noFavoritesDesc": "Events you like will appear here"
+  },
+  "tickets": {
+    "title": "My Tickets",
+    "noTickets": "No tickets found",
+    "noTicketsDesc": "Your booked tickets will appear here",
+    "active": "Active",
+    "used": "Used",
+    "expired": "Expired",
+    "downloadTicket": "Download Ticket",
+    "viewDetails": "View Details"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot Password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "name": "Full Name",
+    "phone": "Phone Number"
+  },
+  "eventDetails": {
+    "about": "About",
+    "location": "Location",
+    "date": "Date",
+    "time": "Time",
+    "category": "Category",
+    "tickets": "Tickets",
+    "bookNow": "Book Now",
+    "soldOut": "Sold Out",
+    "vip": "VIP",
+    "premium": "Premium",
+    "general": "General"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "noNotifications": "No notifications",
+    "noNotificationsDesc": "You're all caught up!"
+  },
+  "support": {
+    "title": "Help & Support",
+    "faq": "FAQ",
+    "contactUs": "Contact Us",
+    "email": "Email Support",
+    "sendMessage": "Send Message",
+    "subject": "Subject",
+    "message": "Message"
+  },
+  "settings": {
+    "language": "Language",
+    "selectLanguage": "Select Language"
+  }
+}

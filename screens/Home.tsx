@@ -574,9 +574,13 @@ const HomeScreen = () => {
         {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={[styles.greeting, { color: colors.textSecondary }]}>Welcome back,</Text>
-            <Text style={[styles.userName, { color: colors.text }]}>
-              {user?.name && user.name.trim() ? user.name.trim().split(' ')[0] : 'Guest'}
+            <Image
+              source={require('../assets/Logo.png')}
+              style={styles.logo}
+              contentFit="contain"
+            />
+            <Text style={[styles.greeting, { color: colors.textSecondary }]}>
+              {user?.name && user.name.trim() ? `Hi, ${user.name.trim().split(' ')[0]}` : 'Welcome back'}
             </Text>
           </View>
           <View style={styles.headerActions}>
@@ -1174,7 +1178,11 @@ const styles = StyleSheet.create({
   },
   greeting: {
     fontSize: 14,
-    marginBottom: 4,
+    marginTop: 4,
+  },
+  logo: {
+    width: 120,
+    height: 40,
   },
   userName: {
     fontSize: 24,

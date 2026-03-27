@@ -1,0 +1,106 @@
+{
+  "common": {
+    "loading": "Ladet...",
+    "retry": "Nochmal versuche",
+    "cancel": "Abbräche",
+    "logout": "Abmälde",
+    "save": "Spichere",
+    "edit": "Bearbeite",
+    "back": "Zrugg",
+    "error": "Fehler",
+    "success": "Erfolgriich",
+    "noData": "Kei Date gfunde"
+  },
+  "tabs": {
+    "home": "Hei",
+    "favorites": "Favoriten",
+    "tickets": "Ticket",
+    "profile": "Profil"
+  },
+  "profile": {
+    "title": "Mis Profil",
+    "account": "KONTO",
+    "accountDetails": "Konto-Detail",
+    "notifications": "Benachrichtigige",
+    "helpSupport": "Hilf & Support",
+    "theme": "Erschinigsbild",
+    "dark": "Dunkel",
+    "light": "Hell",
+    "paymentHistory": "ZAHLUNGSVERLOUFE",
+    "noPaymentHistory": "Kei Zahlungsverloufe gfunde",
+    "loadingProfile": "Profil wird glade...",
+    "logoutConfirm": "Bisch sicher, dass du dich abmälde wotsch?",
+    "guestUser": "Gaschtbenutzer",
+    "paid": "Bezahlt",
+    "pending": "Hängig",
+    "refunded": "Zruggzahlt",
+    "failed": "Fehlgschlage"
+  },
+  "home": {
+    "welcome": "Willkomme",
+    "featuredEvents": "Usgwählti Veranstaltinge",
+    "upcomingEvents": "Bevorstehendi Veranstaltinge",
+    "seeAll": "Alli zeige",
+    "searchPlaceholder": "Veranstaltinge sueche...",
+    "noEvents": "Kei Veranstaltinge verfüegbar",
+    "categories": "Kategorie"
+  },
+  "favorites": {
+    "title": "Favoriten",
+    "noFavorites": "No kei Favoriten",
+    "noFavoritesDesc": "Veranstaltinge, wo dr gfalle, erschine da"
+  },
+  "tickets": {
+    "title": "Mini Ticket",
+    "noTickets": "Kei Ticket gfunde",
+    "noTicketsDesc": "Dini gebuchti Ticket erschine da",
+    "active": "Aktiv",
+    "used": "Brucht",
+    "expired": "Abgloffe",
+    "downloadTicket": "Ticket abelade",
+    "viewDetails": "Detail zeige"
+  },
+  "auth": {
+    "signIn": "Aamälde",
+    "signUp": "Registriere",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "confirmPassword": "Passwort bestätige",
+    "forgotPassword": "Passwort vergässe?",
+    "noAccount": "No kei Konto?",
+    "hasAccount": "Scho es Konto?",
+    "name": "Vollständige Name",
+    "phone": "Telefonnummer"
+  },
+  "eventDetails": {
+    "about": "Über",
+    "location": "Ort",
+    "date": "Datum",
+    "time": "Zit",
+    "category": "Kategorie",
+    "tickets": "Ticket",
+    "bookNow": "Jetzt buche",
+    "soldOut": "Usverkauft",
+    "vip": "VIP",
+    "premium": "Premium",
+    "general": "Allgemein"
+  },
+  "notifications": {
+    "title": "Benachrichtigige",
+    "noNotifications": "Kei Benachrichtigige",
+    "noNotificationsDesc": "Alles aktuell!"
+  },
+  "support": {
+    "title": "Hilf & Support",
+    "faq": "Häufigi Frooge",
+    "contactUs": "Kontakt",
+    "email": "E-Mail-Support",
+    "sendMessage": "Nochricht schicke",
+    "subject": "Betreff",
+    "message": "Nochricht"
+  },
+  "settings": {
+    "language": "Sproch",
+    "selectLanguage": "Sproch uswähle"
+  }
+}

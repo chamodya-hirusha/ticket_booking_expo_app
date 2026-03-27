@@ -11,6 +11,7 @@ import {
     ActivityIndicator,
     Alert
 } from 'react-native';
+import { Image } from 'expo-image';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
@@ -237,6 +238,11 @@ const SignIn = ({ navigation }: any) => {
                 >
                     {/* Header */}
                     <View style={styles.header}>
+                        <Image
+                            source={require('../assets/Logo.png')}
+                            style={styles.logo}
+                            contentFit="contain"
+                        />
                         <Text style={[styles.title, { color: colors.text }]}>Welcome Back</Text>
                         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
                             Sign in to continue
@@ -446,15 +452,23 @@ const styles = StyleSheet.create({
         paddingBottom: 24,
     },
     header: {
-        marginBottom: 40,
+        marginBottom: 30,
+        alignItems: 'center',
+    },
+    logo: {
+        width: 180,
+        height: 60,
+        marginBottom: 20,
     },
     title: {
-        fontSize: 32,
+        fontSize: 28,
         fontWeight: 'bold',
         marginBottom: 8,
+        textAlign: 'center',
     },
     subtitle: {
         fontSize: 16,
+        textAlign: 'center',
     },
     form: {
         flex: 1,

@@ -19,7 +19,7 @@ interface BiometricModalProps {
     visible: boolean;
     onClose: () => void;
     onAuthenticate: (type: LocalAuthentication.AuthenticationType) => void;
-    biometricType?: string; 
+    biometricType?: string;
 }
 
 const { width } = Dimensions.get('window');

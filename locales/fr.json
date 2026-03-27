@@ -1,0 +1,106 @@
+{
+  "common": {
+    "loading": "Chargement...",
+    "retry": "Réessayer",
+    "cancel": "Annuler",
+    "logout": "Déconnexion",
+    "save": "Enregistrer",
+    "edit": "Modifier",
+    "back": "Retour",
+    "error": "Erreur",
+    "success": "Succès",
+    "noData": "Aucune donnée trouvée"
+  },
+  "tabs": {
+    "home": "Accueil",
+    "favorites": "Favoris",
+    "tickets": "Billets",
+    "profile": "Profil"
+  },
+  "profile": {
+    "title": "Mon Profil",
+    "account": "COMPTE",
+    "accountDetails": "Détails du Compte",
+    "notifications": "Notifications",
+    "helpSupport": "Aide et Support",
+    "theme": "Thème",
+    "dark": "Sombre",
+    "light": "Clair",
+    "paymentHistory": "HISTORIQUE DES PAIEMENTS",
+    "noPaymentHistory": "Aucun historique de paiement",
+    "loadingProfile": "Chargement du profil...",
+    "logoutConfirm": "Êtes-vous sûr de vouloir vous déconnecter ?",
+    "guestUser": "Utilisateur Invité",
+    "paid": "Payé",
+    "pending": "En attente",
+    "refunded": "Remboursé",
+    "failed": "Échoué"
+  },
+  "home": {
+    "welcome": "Bienvenue",
+    "featuredEvents": "Événements en Vedette",
+    "upcomingEvents": "Événements à Venir",
+    "seeAll": "Voir Tout",
+    "searchPlaceholder": "Rechercher des événements...",
+    "noEvents": "Aucun événement disponible",
+    "categories": "Catégories"
+  },
+  "favorites": {
+    "title": "Favoris",
+    "noFavorites": "Pas encore de favoris",
+    "noFavoritesDesc": "Les événements que vous aimez apparaîtront ici"
+  },
+  "tickets": {
+    "title": "Mes Billets",
+    "noTickets": "Aucun billet trouvé",
+    "noTicketsDesc": "Vos billets réservés apparaîtront ici",
+    "active": "Actif",
+    "used": "Utilisé",
+    "expired": "Expiré",
+    "downloadTicket": "Télécharger le Billet",
+    "viewDetails": "Voir les Détails"
+  },
+  "auth": {
+    "signIn": "Se Connecter",
+    "signUp": "S'inscrire",
+    "email": "Email",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "forgotPassword": "Mot de passe oublié ?",
+    "noAccount": "Pas de compte ?",
+    "hasAccount": "Vous avez déjà un compte ?",
+    "name": "Nom Complet",
+    "phone": "Numéro de Téléphone"
+  },
+  "eventDetails": {
+    "about": "À Propos",
+    "location": "Lieu",
+    "date": "Date",
+    "time": "Heure",
+    "category": "Catégorie",
+    "tickets": "Billets",
+    "bookNow": "Réserver Maintenant",
+    "soldOut": "Épuisé",
+    "vip": "VIP",
+    "premium": "Premium",
+    "general": "Général"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "noNotifications": "Aucune notification",
+    "noNotificationsDesc": "Vous êtes à jour !"
+  },
+  "support": {
+    "title": "Aide et Support",
+    "faq": "FAQ",
+    "contactUs": "Nous Contacter",
+    "email": "Support par Email",
+    "sendMessage": "Envoyer un Message",
+    "subject": "Sujet",
+    "message": "Message"
+  },
+  "settings": {
+    "language": "Langue",
+    "selectLanguage": "Sélectionner la Langue"
+  }
+}

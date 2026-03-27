@@ -19,6 +19,8 @@ import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { apiService } from '../services/api';
+import { useLanguage, LANGUAGES, SupportedLanguage } from '../context/LanguageContext';
+import { Modal, FlatList } from 'react-native';
 
 interface PaymentItem {
    id: string;
@@ -35,12 +37,14 @@ const Profile = () => {
    const navigation = useNavigation();
    const { colors, theme, toggleTheme } = useTheme();
    const { user, signOut, isAuthenticated, handlePermissionError } = useAuth();
+   const { t, language, setLanguage } = useLanguage();
    const [profileData, setProfileData] = useState<any>(null);
    const [payments, setPayments] = useState<PaymentItem[]>([]);
    const [loading, setLoading] = useState(true);
    const [refreshing, setRefreshing] = useState(false);
    const [error, setError] = useState<string | null>(null);
    const [currentPage, setCurrentPage] = useState(0);
+   const [langModalVisible, setLangModalVisible] = useState(false);
    const PAGE_SIZE = 5;
 
    // Fetch user profile data
@@ -207,8 +211,8 @@ const Profile = () => {
 
    const handleLogout = () => {
       Alert.alert(
-         'Logout',
-         'Are you sure you want to logout?',
+         t('common.logout'),
+         t('profile.logoutConfirm'),
          [
             {
                text: 'Cancel',
@@ -408,6 +412,45 @@ const Profile = () => {
 
    return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+         {/* Language Picker Modal */}
+         <Modal
+            visible={langModalVisible}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setLangModalVisible(false)}
+         >
+            <View style={styles.modalOverlay}>
+               <View style={[styles.modalCard, { backgroundColor: colors.surface }]}>
+                  <Text style={[styles.modalTitle, { color: colors.text }]}>{t('settings.selectLanguage')}</Text>
+                  <FlatList
+                     data={LANGUAGES}
+                     keyExtractor={(item) => item.code}
+                     renderItem={({ item }) => (
+                        <TouchableOpacity
+                           style={[
+                              styles.langItem,
+                              item.code === language && { backgroundColor: colors.primary + '20' }
+                           ]}
+                           onPress={() => { setLanguage(item.code as SupportedLanguage); setLangModalVisible(false); }}
+                        >
+                           <Text style={{ fontSize: 22 }}>{item.flag}</Text>
+                           <Text style={[styles.langLabel, { color: colors.text }]}>{item.label}</Text>
+                           {item.code === language && (
+                              <Feather name="check" size={18} color={colors.primary} style={{ marginLeft: 'auto' }} />
+                           )}
+                        </TouchableOpacity>
+                     )}
+                  />
+                  <TouchableOpacity
+                     style={[styles.modalClose, { backgroundColor: colors.primary }]}
+                     onPress={() => setLangModalVisible(false)}
+                  >
+                     <Text style={{ color: theme === 'dark' ? '#000' : '#fff', fontWeight: 'bold' }}>{t('common.cancel')}</Text>
+                  </TouchableOpacity>
+               </View>
+            </View>
+         </Modal>
+
          {/* Header */}
          <View style={styles.header}>
             <TouchableOpacity
@@ -416,7 +459,7 @@ const Profile = () => {
             >
                <Feather name="arrow-left" size={24} color={colors.text} />
             </TouchableOpacity>
-            <Text style={[styles.headerTitle, { color: colors.text }]}>My Profile</Text>
+            <Text style={[styles.headerTitle, { color: colors.text }]}>{t('profile.title')}</Text>
             <TouchableOpacity
                style={styles.logoutIconButton}
                onPress={handleLogout}
@@ -440,7 +483,7 @@ const Profile = () => {
             {loading ? (
                <View style={styles.loadingContainer}>
                   <ActivityIndicator size="large" color={colors.primary} />
-                  <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Loading profile...</Text>
+                  <Text style={[styles.loadingText, { color: colors.textSecondary }]}>{t('profile.loadingProfile')}</Text>
                </View>
             ) : (
                <>
@@ -452,7 +495,7 @@ const Profile = () => {
                         />
                      </View>
                      <Text style={[styles.userName, { color: colors.text }]}>
-                        {profileData?.name || user?.name || 'Guest User'}
+                        {profileData?.name || user?.name || t('profile.guestUser')}
                      </Text>
                      <Text style={[styles.userEmail, { color: colors.textSecondary }]}>
                         {profileData?.email || user?.email || 'guest@example.com'}
@@ -467,29 +510,35 @@ const Profile = () => {
             )}
 
             <View style={styles.section}>
-               <Text style={[styles.sectionHeader, { color: colors.textSecondary }]}>ACCOUNT</Text>
+               <Text style={[styles.sectionHeader, { color: colors.textSecondary }]}>{t('profile.account')}</Text>
                <View style={styles.settingsList}>
                   <SettingsItem
                      icon="user"
-                     label="Account Details"
+                     label={t('profile.accountDetails')}
                      colors={colors}
                      onPress={() => navigation.navigate('EditProfile' as never)}
                   />
                   <SettingsItem
                      icon="bell"
-                     label="Notifications"
+                     label={t('profile.notifications')}
                      colors={colors}
                      onPress={() => navigation.navigate('Notifications' as never)}
                   />
                   <SettingsItem
                      icon={theme === 'dark' ? 'moon' : 'sun'}
-                     label={`Theme: ${theme === 'dark' ? 'Dark' : 'Light'}`}
+                     label={`${t('profile.theme')}: ${theme === 'dark' ? t('profile.dark') : t('profile.light')}`}
                      onPress={toggleTheme}
                      colors={colors}
                   />
                   <SettingsItem
+                     icon="globe"
+                     label={`${t('settings.language')}: ${LANGUAGES.find(l => l.code === language)?.label}`}
+                     colors={colors}
+                     onPress={() => setLangModalVisible(true)}
+                  />
+                  <SettingsItem
                      icon="help-circle"
-                     label="Help & Support"
+                     label={t('profile.helpSupport')}
                      onPress={() => navigation.navigate('Support' as never)}
                      colors={colors}
                   />
@@ -498,7 +547,7 @@ const Profile = () => {
 
             {!loading && (
                <View style={styles.section}>
-                  <Text style={[styles.sectionHeader, { color: colors.textSecondary }]}>PAYMENT HISTORY</Text>
+                  <Text style={[styles.sectionHeader, { color: colors.textSecondary }]}>{t('profile.paymentHistory')}</Text>
                   {error ? (
                      <View style={styles.errorContainer}>
                         <Text style={[styles.errorText, { color: colors.error || '#ff4444' }]}>{error}</Text>
@@ -514,7 +563,7 @@ const Profile = () => {
                         <View style={styles.emptyPaymentContainer}>
                            <Feather name="credit-card" size={32} color={colors.textSecondary} />
                            <Text style={[styles.emptyPaymentText, { color: colors.textSecondary }]}>
-                              No payment history found
+                              {t('profile.noPaymentHistory')}
                            </Text>
                         </View>
                      </View>
@@ -551,7 +600,7 @@ const Profile = () => {
                      style={styles.logoutButtonGradient}
                   >
                      <Feather name="log-out" size={20} color={colors.error} />
-                     <Text style={[styles.logoutText, { color: colors.error }]}>Logout</Text>
+                     <Text style={[styles.logoutText, { color: colors.error }]}>{t('common.logout')}</Text>
                   </LinearGradient>
                </TouchableOpacity>
             </View>
@@ -873,6 +922,48 @@ const styles = StyleSheet.create({
    ellipsisText: {
       fontSize: 16,
       fontWeight: '400',
+   },
+   modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 24,
+   },
+   modalCard: {
+      width: '100%',
+      borderRadius: 20,
+      padding: 20,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 10,
+      elevation: 8,
+   },
+   modalTitle: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 16,
+      textAlign: 'center',
+   },
+   langItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 14,
+      paddingHorizontal: 12,
+      borderRadius: 12,
+      marginBottom: 6,
+      gap: 12,
+   },
+   langLabel: {
+      fontSize: 16,
+      fontWeight: '500',
+   },
+   modalClose: {
+      marginTop: 12,
+      paddingVertical: 14,
+      borderRadius: 14,
+      alignItems: 'center',
    },
 });
 

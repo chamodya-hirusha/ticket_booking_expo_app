@@ -4,6 +4,7 @@ import { FavoritesProvider } from './context/FavoritesContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { ToastProvider } from './context/ToastContext';
+import { LanguageProvider } from './context/LanguageContext';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -45,6 +46,7 @@ import SignIn from './screens/SignIn';
 import SignUp from './screens/SignUp';
 import SeeAll from './screens/SeeAll';
 import Notifications from './screens/Notifications';
+import AnimatedSplashScreen from './components/AnimatedSplashScreen';
 
 // Define navigators
 const Stack = createStackNavigator();
@@ -142,14 +144,6 @@ const AppNavigator = () => {
   const { colors, theme } = useTheme();
   const { isAuthenticated, isLoading } = useAuth();
 
-  useEffect(() => {
-    if (!isLoading) {
-      SplashScreen.hideAsync().catch(() => {
-        /* error hiding splash screen */
-      });
-    }
-  }, [isLoading]);
-
   if (isLoading) {
     return null;
   }
@@ -209,6 +203,8 @@ const AppNavigator = () => {
 };
 
 const App = () => {
+  const [isSplashVisible, setIsSplashVisible] = React.useState(true);
+
   // Request notification permissions on app startup
   useEffect(() => {
     const requestPermissions = async () => {
@@ -233,15 +229,21 @@ const App = () => {
       urlScheme="ticketbooking" // Optional: required for 3D Secure and bank redirects
     >
       <ThemeProvider>
+        <LanguageProvider>
         <ToastProvider>
           <AuthProvider>
             <NotificationProvider>
               <FavoritesProvider>
-                <AppNavigator />
+                {isSplashVisible ? (
+                  <AnimatedSplashScreen onAnimationComplete={() => setIsSplashVisible(false)} />
+                ) : (
+                  <AppNavigator />
+                )}
               </FavoritesProvider>
             </NotificationProvider>
           </AuthProvider>
         </ToastProvider>
+        </LanguageProvider>
       </ThemeProvider>
     </StripeProvider>
   );

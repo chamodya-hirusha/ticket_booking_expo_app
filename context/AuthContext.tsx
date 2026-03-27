@@ -227,12 +227,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const response = await apiService.register(name, password, email, phone);
 
             if (response.success) {
-                // Try to send verification code if registration was successful
-                try {
-                    await apiService.resendVerify(email);
-                } catch (e) {
-                    console.error('Failed to send verification code automatically:', e);
-                }
                 return { success: true };
             }
 

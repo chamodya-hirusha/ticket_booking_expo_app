@@ -4,7 +4,7 @@
     "slug": "mobile-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/Logo.png",
     "scheme": "mobileapp",
     "sdkVersion": "54.0.0",
     "platforms": [
@@ -12,7 +12,7 @@
       "android"
     ],
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/Logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#0a0a1a"
     },
@@ -23,6 +23,15 @@
       "**/*"
     ],
     "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/Logo.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#0a0a1a"
+        }
+      ],
       [
         "expo-media-library",
         {
@@ -55,7 +64,12 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/Logo.png",
+        "backgroundColor": "#0a0a1a"
+      },
+      "splash": {
+        "image": "./assets/Logo.png",
+        "resizeMode": "contain",
         "backgroundColor": "#0a0a1a"
       },
       "package": "com.mobileapp",
@@ -77,7 +91,7 @@
       ]
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/Logo.png"
     },
     "extra": {
       "eas": {
