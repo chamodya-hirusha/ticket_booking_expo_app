@@ -15,6 +15,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useStripe } from '@stripe/stripe-react-native';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import { Event } from '../constants';
 import { apiService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -45,6 +46,7 @@ const ConfirmPay = () => {
    const route = useRoute<ConfirmPayRouteProp>();
    const { user, handlePermissionError } = useAuth();
    const { colors, theme } = useTheme();
+   const { t } = useLanguage();
    const { initPaymentSheet, presentPaymentSheet } = useStripe();
 
    const event = route.params?.event;
@@ -63,7 +65,7 @@ const ConfirmPay = () => {
          const ticket = tickets[0];
 
          return {
-            type: ticket.name || 'General',
+            type: ticket.name || t('eventDetails.general'),
             quantity: ticket.quantity || 1,
             price: ticket.price || 0,
             total: (ticket.price || 0) * (ticket.quantity || 1)
@@ -72,12 +74,12 @@ const ConfirmPay = () => {
 
       const fallbackPrice = event?.generalTicketPrice || (event as any)?.price || 75;
       return {
-         type: 'General',
+         type: t('eventDetails.general'),
          quantity: 2,
          price: fallbackPrice,
          total: fallbackPrice * 2
       };
-   }, [tickets, event]);
+   }, [tickets, event, t]);
 
    const ticketDetails = getTicketDetails;
    const totalAmount = (ticketDetails.total || 0) + SERVICE_FEE;
@@ -113,7 +115,7 @@ const ConfirmPay = () => {
                });
             }
          } catch (error) {
-            Alert.alert('Error', 'Failed to load personal details');
+            Alert.alert(t('common.error'), t('confirmPay.unexpectedError'));
             setPersonalDetails({
                name: user.name || '',
                email: user.email || '',
@@ -134,12 +136,12 @@ const ConfirmPay = () => {
 
    const handlePay = async () => {
       if (!event || !event.id) {
-         Alert.alert('Error', 'Event information is missing');
+         Alert.alert(t('common.error'), t('confirmPay.eventMissing'));
          return;
       }
 
       if (!user) {
-         Alert.alert('Authentication Required', 'Please sign in to complete payment');
+         Alert.alert(t('auth.authRequired'), t('auth.pleaseSignIn'));
          return;
       }
 
@@ -148,13 +150,13 @@ const ConfirmPay = () => {
       try {
          const eventId = parseInt(event.id);
          if (isNaN(eventId) || eventId <= 0) {
-            Alert.alert('Invalid Event', 'Event ID is invalid.');
+            Alert.alert(t('common.error'), t('confirmPay.invalidEvent'));
             setProcessing(false);
             return;
          }
 
          if (ticketDetails.quantity <= 0 || ticketDetails.quantity > 10) {
-            Alert.alert('Invalid Quantity', 'Please select between 1 and 10 tickets.');
+            Alert.alert(t('common.error'), t('confirmPay.invalidQuantity'));
             setProcessing(false);
             return;
          }
@@ -168,7 +170,7 @@ const ConfirmPay = () => {
 
          if (!reservationResponse.success || !reservationResponse.data) {
             const status = (reservationResponse as any).data?._status || (reservationResponse as any).status;
-            let errorMessage = reservationResponse.error || 'Failed to create reservation';
+            let errorMessage = reservationResponse.error || t('confirmPay.reservationFailed');
 
             if (status === 401 || errorMessage.toLowerCase().includes('token')) {
                if (handlePermissionError) await handlePermissionError();
@@ -176,7 +178,7 @@ const ConfirmPay = () => {
                return;
             }
 
-            Alert.alert('Reservation Failed', errorMessage);
+            Alert.alert(t('confirmPay.reservationFailed'), errorMessage);
             setProcessing(false);
             return;
          }
@@ -190,7 +192,7 @@ const ConfirmPay = () => {
          );
 
          if (!paymentResponse.success || !paymentResponse.data?.clientSecret) {
-            Alert.alert('Payment Error', paymentResponse.error || 'Failed to initialize payment');
+            Alert.alert(t('confirmPay.paymentError'), paymentResponse.error || t('confirmPay.paymentFailed'));
             setProcessing(false);
             return;
          }
@@ -210,7 +212,7 @@ const ConfirmPay = () => {
 
          if (initError) {
             if (payment?.intentId) await apiService.payment.verifyPayment(payment.intentId);
-            Alert.alert('Payment Error', initError.message);
+            Alert.alert(t('confirmPay.paymentError'), initError.message);
             setProcessing(false);
             return;
          }
@@ -218,7 +220,7 @@ const ConfirmPay = () => {
          const { error: presentError } = await presentPaymentSheet();
          if (presentError) {
             if (payment?.intentId) await apiService.payment.verifyPayment(payment.intentId);
-            if (presentError.code !== 'Canceled') Alert.alert('Payment Failed', presentError.message);
+            if (presentError.code !== 'Canceled') Alert.alert(t('confirmPay.paymentFailed'), presentError.message);
             setProcessing(false);
             return;
          }
@@ -236,7 +238,7 @@ const ConfirmPay = () => {
          });
 
       } catch (error) {
-         Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+         Alert.alert(t('common.error'), t('confirmPay.unexpectedError'));
       } finally {
          setProcessing(false);
       }
@@ -249,16 +251,16 @@ const ConfirmPay = () => {
                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                   <MaterialIcons name="arrow-back-ios" size={24} color={colors.text} />
                </TouchableOpacity>
-               <Text style={[styles.headerTitle, { color: colors.text }]}>Confirm & Pay</Text>
+               <Text style={[styles.headerTitle, { color: colors.text }]}>{t('confirmPay.title')}</Text>
                <View style={{ width: 40 }} />
             </View>
             <View style={styles.errorContainer}>
-               <Text style={[styles.errorText, { color: colors.text }]}>Event information is missing</Text>
+               <Text style={[styles.errorText, { color: colors.text }]}>{t('confirmPay.eventMissing')}</Text>
                <TouchableOpacity
                   style={[styles.backButton, { backgroundColor: colors.primary, padding: 12, borderRadius: 8, marginTop: 16 }]}
                   onPress={() => navigation.goBack()}
                >
-                  <Text style={{ color: theme === 'dark' ? '#000' : '#fff', fontWeight: '600' }}>Go Back</Text>
+                  <Text style={{ color: theme === 'dark' ? '#000' : '#fff', fontWeight: '600' }}>{t('common.goBack')}</Text>
                </TouchableOpacity>
             </View>
          </SafeAreaView>
@@ -271,7 +273,7 @@ const ConfirmPay = () => {
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                <MaterialIcons name="arrow-back-ios" size={24} color={colors.text} />
             </TouchableOpacity>
-            <Text style={[styles.headerTitle, { color: colors.text }]}>Confirm & Pay</Text>
+            <Text style={[styles.headerTitle, { color: colors.text }]}>{t('confirmPay.title')}</Text>
             <View style={{ width: 40 }} />
          </View>
 
@@ -285,12 +287,12 @@ const ConfirmPay = () => {
                      textShadowOffset: { width: 0, height: 0 },
                      textShadowRadius: 10
                   }
-               ]}>Order Summary</Text>
+               ]}>{t('confirmPay.orderSummary')}</Text>
 
                <View style={[styles.summaryRow, { borderBottomColor: colors.border }]}>
                   <View style={styles.rowItem}>
                      <Text style={[styles.itemLabel, { color: colors.textSecondary }]}>
-                        {event?.name || (event as any)?.title || 'Event'}
+                        {event?.name || (event as any)?.title || t('home.searchText')}
                      </Text>
                      <Text style={[styles.itemValue, { color: colors.text }]}>
                         {event?.date ? new Date(event.date).toLocaleDateString('en-US', {
@@ -302,7 +304,7 @@ const ConfirmPay = () => {
                   </View>
                   <View style={styles.rowItem}>
                      <Text style={[styles.itemLabel, { color: colors.textSecondary }]}>
-                        Tickets ({ticketDetails?.quantity || 0} x {ticketDetails?.type || 'General'} @ {formatPrice(ticketDetails?.price || 0)})
+                        {t('eventDetails.tickets')} ({ticketDetails?.quantity || 0} x {ticketDetails?.type || t('eventDetails.general')} @ {formatPrice(ticketDetails?.price || 0)})
                      </Text>
                      <Text style={[styles.itemValue, { color: colors.text }]}>
                         {formatPrice(ticketDetails?.total || 0)}
@@ -310,14 +312,14 @@ const ConfirmPay = () => {
                   </View>
                   {SERVICE_FEE > 0 && (
                      <View style={styles.rowItem}>
-                        <Text style={[styles.itemLabel, { color: colors.textSecondary }]}>Service Fee</Text>
+                        <Text style={[styles.itemLabel, { color: colors.textSecondary }]}>{t('confirmPay.serviceFee')}</Text>
                         <Text style={[styles.itemValue, { color: colors.text }]}>{formatPrice(SERVICE_FEE)}</Text>
                      </View>
                   )}
                </View>
 
                <View style={styles.totalRow}>
-                  <Text style={[styles.totalLabel, { color: colors.textSecondary }]}>Total</Text>
+                  <Text style={[styles.totalLabel, { color: colors.textSecondary }]}>{t('confirmPay.total')}</Text>
                   <Text style={[
                      styles.totalValue,
                      { color: colors.primary },
@@ -342,20 +344,20 @@ const ConfirmPay = () => {
                         textShadowOffset: { width: 0, height: 0 },
                         textShadowRadius: 10
                      }
-                  ]}>Personal Details</Text>
+                  ]}>{t('confirmPay.personalDetails')}</Text>
 
                   <View style={[styles.summaryRow, { borderBottomColor: colors.border }]}>
                      <View style={styles.rowItem}>
-                        <Text style={[styles.itemLabel, { color: colors.textSecondary }]}>Name</Text>
-                        <Text style={[styles.itemValue, { color: colors.text }]}>{personalDetails.name || 'Not provided'}</Text>
+                        <Text style={[styles.itemLabel, { color: colors.textSecondary }]}>{t('confirmPay.name')}</Text>
+                        <Text style={[styles.itemValue, { color: colors.text }]}>{personalDetails.name || t('confirmPay.notProvided')}</Text>
                      </View>
                      <View style={styles.rowItem}>
-                        <Text style={[styles.itemLabel, { color: colors.textSecondary }]}>Email</Text>
-                        <Text style={[styles.itemValue, { color: colors.text }]}>{personalDetails.email || 'Not provided'}</Text>
+                        <Text style={[styles.itemLabel, { color: colors.textSecondary }]}>{t('confirmPay.email')}</Text>
+                        <Text style={[styles.itemValue, { color: colors.text }]}>{personalDetails.email || t('confirmPay.notProvided')}</Text>
                      </View>
                      {personalDetails.phone && (
                         <View style={styles.rowItem}>
-                           <Text style={[styles.itemLabel, { color: colors.textSecondary }]}>Phone</Text>
+                           <Text style={[styles.itemLabel, { color: colors.textSecondary }]}>{t('confirmPay.phone')}</Text>
                            <Text style={[styles.itemValue, { color: colors.text }]}>{personalDetails.phone}</Text>
                         </View>
                      )}
@@ -372,9 +374,9 @@ const ConfirmPay = () => {
                      textShadowOffset: { width: 0, height: 0 },
                      textShadowRadius: 10
                   }
-               ]}>Payment</Text>
+               ]}>{t('confirmPay.payment')}</Text>
                <Text style={[styles.paymentInfoText, { color: colors.textSecondary }]}>
-                  Click "Pay Now" to securely complete your payment using Stripe's secure payment system.
+                  {t('confirmPay.paymentDescription')}
                </Text>
             </View>
          </ScrollView>
@@ -397,7 +399,7 @@ const ConfirmPay = () => {
                ) : (
                   <>
                      <MaterialIcons name="lock" size={20} color={theme === 'dark' ? '#000' : '#fff'} />
-                     <Text style={[styles.payButtonText, { color: theme === 'dark' ? '#000' : '#fff' }]}>COMPLETE PAYMENT</Text>
+                     <Text style={[styles.payButtonText, { color: theme === 'dark' ? '#000' : '#fff' }]}>{t('confirmPay.completePayment')}</Text>
                      <Text style={[styles.payButtonAmount, { color: theme === 'dark' ? '#000' : '#fff' }]}>{formatPrice(totalAmount)}</Text>
                   </>
                )}

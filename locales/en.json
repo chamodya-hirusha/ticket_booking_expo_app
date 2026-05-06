@@ -9,13 +9,26 @@
     "back": "Back",
     "error": "Error",
     "success": "Success",
-    "noData": "No data found"
+    "noData": "No data found",
+    "search": "Search",
+    "apply": "Apply",
+    "reset": "Reset",
+    "close": "Close",
+    "confirm": "Confirm",
+    "anytime": "Anytime",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "thisWeek": "This Week",
+    "noImage": "No Image",
+    "seeAll": "See All",
+    "goBack": "Go Back"
   },
   "tabs": {
     "home": "Home",
     "favorites": "Favorites",
     "tickets": "Tickets",
-    "profile": "Profile"
+    "profile": "Profile",
+    "explore": "Explore"
   },
   "profile": {
     "title": "My Profile",
@@ -34,16 +47,47 @@
     "paid": "Paid",
     "pending": "Pending",
     "refunded": "Refunded",
-    "failed": "Failed"
+    "failed": "Failed",
+    "hi": "Hi",
+    "welcomeBack": "Welcome back"
   },
   "home": {
     "welcome": "Welcome",
     "featuredEvents": "Featured Events",
     "upcomingEvents": "Upcoming Events",
+    "popularNearYou": "Popular Near You",
     "seeAll": "See All",
-    "searchPlaceholder": "Search events...",
+    "searchPlaceholder": "Search events, artists, venues...",
     "noEvents": "No events available",
-    "categories": "Categories"
+    "categories": "Categories",
+    "loadingEvents": "Loading events...",
+    "advancedSearch": "Advanced Search",
+    "searchText": "Search Text",
+    "category": "Category",
+    "location": "Location",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "priceRange": "Price Range",
+    "sortBy": "Sort By",
+    "date": "Date",
+    "price": "Price",
+    "ascending": "Ascending",
+    "descending": "Descending"
+  },
+  "explore": {
+    "title": "Explore",
+    "subtitle": "Discover events near you",
+    "searchPlaceholder": "Search events, artists...",
+    "featuredEvents": "Featured Events",
+    "popularNearby": "Popular Nearby",
+    "filterEvents": "Filter Events",
+    "date": "Date",
+    "priceRange": "Price Range",
+    "location": "Location",
+    "enterCity": "Enter city or district",
+    "reset": "Reset",
+    "applyFilters": "Apply Filters",
+    "book": "Book"
   },
   "favorites": {
     "title": "Favorites",
@@ -58,7 +102,10 @@
     "used": "Used",
     "expired": "Expired",
     "downloadTicket": "Download Ticket",
-    "viewDetails": "View Details"
+    "viewDetails": "View Details",
+    "ticketCount": "{{count}} Tickets",
+    "upcoming": "Upcoming",
+    "past": "Past"
   },
   "auth": {
     "signIn": "Sign In",
@@ -70,7 +117,15 @@
     "noAccount": "Don't have an account?",
     "hasAccount": "Already have an account?",
     "name": "Full Name",
-    "phone": "Phone Number"
+    "phone": "Phone Number",
+    "welcome": "Welcome back!",
+    "signInToContinue": "Sign in to continue your journey",
+    "createAccount": "Create Account",
+    "joinUs": "Join us and start booking your favorite events",
+    "signingIn": "Signing in...",
+    "signingUp": "Signing up...",
+    "authRequired": "Authentication Required",
+    "pleaseSignIn": "Please sign in to complete payment"
   },
   "eventDetails": {
     "about": "About",
@@ -83,12 +138,77 @@
     "soldOut": "Sold Out",
     "vip": "VIP",
     "premium": "Premium",
-    "general": "General"
+    "general": "General",
+    "eventDescription": "Event Description",
+    "organizer": "Organizer",
+    "getTickets": "Get Tickets"
+  },
+  "confirmPay": {
+    "title": "Confirm & Pay",
+    "orderSummary": "Order Summary",
+    "personalDetails": "Personal Details",
+    "payment": "Payment",
+    "paymentDescription": "Click \"Pay Now\" to securely complete your payment using Stripe's secure payment system.",
+    "completePayment": "COMPLETE PAYMENT",
+    "serviceFee": "Service Fee",
+    "total": "Total",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "notProvided": "Not provided",
+    "eventMissing": "Event information is missing",
+    "invalidEvent": "Event ID is invalid.",
+    "invalidQuantity": "Please select between 1 and 10 tickets.",
+    "reservationFailed": "Reservation Failed",
+    "paymentError": "Payment Error",
+    "paymentFailed": "Payment Failed",
+    "unexpectedError": "An unexpected error occurred. Please try again."
+  },
+  "paymentSuccess": {
+    "title": "Payment Successful",
+    "successMessage": "Your payment has been processed successfully.",
+    "bookingConfirmed": "Booking Confirmed",
+    "ticketDetails": "Ticket Details",
+    "transactionId": "Transaction ID",
+    "viewTicket": "View Ticket",
+    "backToHome": "Back to Home",
+    "downloadReceipt": "Download Receipt"
+  },
+  "ticketSelection": {
+    "title": "Select Tickets",
+    "availableTickets": "Available Tickets",
+    "quantity": "Quantity",
+    "total": "Total",
+    "next": "Next",
+    "selectQuantity": "Select Quantity"
+  },
+  "ticketDetail": {
+    "title": "Ticket Details",
+    "eventInfo": "Event Information",
+    "ticketInfo": "Ticket Information",
+    "orderInfo": "Order Information",
+    "status": "Status",
+    "orderId": "Order ID",
+    "purchaseDate": "Purchase Date",
+    "showQr": "Show QR Code",
+    "hideQr": "Hide QR Code",
+    "scanInstructions": "Scan this QR code at the event entrance"
+  },
+  "editProfile": {
+    "title": "Edit Profile",
+    "saveChanges": "Save Changes",
+    "changePhoto": "Change Photo",
+    "fullName": "Full Name",
+    "email": "Email",
+    "phone": "Phone Number",
+    "updateSuccess": "Profile updated successfully",
+    "updateError": "Failed to update profile"
   },
   "notifications": {
     "title": "Notifications",
     "noNotifications": "No notifications",
-    "noNotificationsDesc": "You're all caught up!"
+    "noNotificationsDesc": "You're all caught up!",
+    "markAllRead": "Mark all as read"
   },
   "support": {
     "title": "Help & Support",
@@ -97,7 +217,9 @@
     "email": "Email Support",
     "sendMessage": "Send Message",
     "subject": "Subject",
-    "message": "Message"
+    "message": "Message",
+    "sendSuccess": "Message sent successfully",
+    "sendError": "Failed to send message"
   },
   "settings": {
     "language": "Language",

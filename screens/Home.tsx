@@ -18,10 +18,11 @@ import { Event, getEventImageUrl } from '../constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons, Ionicons, Feather } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useFavorites } from '../context/FavoritesContext';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../context/AuthContext';
 import { apiService } from '../services/api';
+import { LinearGradient } from 'expo-linear-gradient';
 import { transformEvent, getEventPriceDisplay } from '../utils/event';
 
 const { width } = Dimensions.get('window');
@@ -84,16 +85,17 @@ interface CategoryItem {
 const HomeScreen = () => {
   const navigation = useNavigation();
   const { colors, theme } = useTheme();
+  const { t } = useLanguage();
   const { isFavorite, toggleFavorite } = useFavorites();
   const { user, refreshUser, isAuthenticated } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isFilterVisible, setIsFilterVisible] = useState(false);
-  const [selectedDate, setSelectedDate] = useState('Anytime');
+  const [selectedDate, setSelectedDate] = useState(t('common.anytime'));
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(500);
   const [events, setEvents] = useState<Event[]>([]);
   const [categories, setCategories] = useState<CategoryItem[]>([
-    { id: 'all', name: 'All', value: null, icon: 'grid-outline' }
+    { id: 'all', name: t('common.seeAll'), value: null, icon: 'grid-outline' }
   ]);
   const [loading, setLoading] = useState(true);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
@@ -174,18 +176,18 @@ const HomeScreen = () => {
 
         setEvents(transformedEvents);
       } else {
-        setError(response.error || 'Search failed');
+        setError(response.error || t('common.error'));
         setEvents([]);
       }
     } catch (err: any) {
-      const errorMessage = err?.message || 'An error occurred while searching';
+      const errorMessage = err?.message || t('confirmPay.unexpectedError');
       setError(errorMessage);
       setEvents([]);
 
     } finally {
       setLoading(false);
     }
-  }, [selectedCategory]);
+  }, [selectedCategory, t]);
 
   // Debounced search effect
   useEffect(() => {
@@ -262,7 +264,7 @@ const HomeScreen = () => {
           });
 
         setCategories([
-          { id: 'all', name: 'All', value: null, icon: 'grid-outline' },
+          { id: 'all', name: t('common.seeAll'), value: null, icon: 'grid-outline' },
           ...dynamicCategories
         ]);
       }
@@ -380,13 +382,13 @@ const HomeScreen = () => {
           setEvents([]);
         }
       } else {
-        const errorMsg = response.error || response.message || 'Failed to load events';
+        const errorMsg = response.error || response.message || t('home.noEvents');
 
         setError(errorMsg);
         setEvents([]);
       }
     } catch (err: any) {
-      const errorMessage = err.message || 'Network error. Please check your connection.';
+      const errorMessage = err.message || t('confirmPay.unexpectedError');
       setError(errorMessage);
       setEvents([]);
     } finally {
@@ -428,7 +430,7 @@ const HomeScreen = () => {
   const formatEventDateTime = (date: string, startTime?: string) => {
     try {
       const dateObj = new Date(date);
-      const formattedDate = dateObj.toLocaleDateString('en-US', {
+      const formattedDate = dateObj.toLocaleDateString(t('common.date') === 'Date' ? 'en-US' : 'it-IT', {
         month: 'short',
         day: 'numeric',
         year: 'numeric'
@@ -461,7 +463,7 @@ const HomeScreen = () => {
         {hasImageError ? (
           <View style={[styles.eventImage, styles.eventImagePlaceholder, { backgroundColor: colors.inputBackground }]}>
             <MaterialIcons name="image" size={40} color={colors.textSecondary} />
-            <Text style={[styles.eventImagePlaceholderText, { color: colors.textSecondary }]}>No Image</Text>
+            <Text style={[styles.eventImagePlaceholderText, { color: colors.textSecondary }]}>{t('common.noImage')}</Text>
           </View>
         ) : (
           <Image
@@ -580,7 +582,7 @@ const HomeScreen = () => {
               contentFit="contain"
             />
             <Text style={[styles.greeting, { color: colors.textSecondary }]}>
-              {user?.name && user.name.trim() ? `Hi, ${user.name.trim().split(' ')[0]}` : 'Welcome back'}
+              {user?.name && user.name.trim() ? `${t('profile.hi')}, ${user.name.trim().split(' ')[0]}` : t('profile.welcomeBack')}
             </Text>
           </View>
           <View style={styles.headerActions}>
@@ -591,7 +593,7 @@ const HomeScreen = () => {
               <Feather name="bell" size={20} color={colors.text} />
               <View style={[styles.notificationBadge, { backgroundColor: colors.notification }]} />
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.iconButton, { backgroundColor: colors.surface }]}>
+            <TouchableOpacity style={[styles.iconButton, { backgroundColor: colors.surface }]} onPress={() => (navigation as any).navigate('Profile')}>
               <Image
                 source={{ uri: user?.avatar || 'https://api.dicebear.com/7.x/notionists/png?seed=User&backgroundColor=3b82f6' }}
                 style={styles.avatar}
@@ -605,7 +607,7 @@ const HomeScreen = () => {
           <Feather name="search" size={20} color={colors.textSecondary} />
           <TextInput
             style={[styles.searchInput, { color: colors.text }]}
-            placeholder="Search events, artists, venues..."
+            placeholder={t('home.searchPlaceholder')}
             placeholderTextColor={colors.placeholder}
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -682,24 +684,24 @@ const HomeScreen = () => {
         {/* Featured Events */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Featured Events</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('home.featuredEvents')}</Text>
             {events.length > 0 && (
               <TouchableOpacity onPress={() => {
                 const selectedCat = categories.find(cat => cat.id === selectedCategory);
                 (navigation as any).navigate('SeeAll', {
-                  title: 'Featured Events',
+                  title: t('home.featuredEvents'),
                   data: events,
                   category: selectedCat?.value,
                 });
               }}>
-                <Text style={[styles.seeAll, { color: colors.primary }]}>See All</Text>
+                <Text style={[styles.seeAll, { color: colors.primary }]}>{t('common.seeAll')}</Text>
               </TouchableOpacity>
             )}
           </View>
           {loading ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color={colors.primary} />
-              <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Loading events...</Text>
+              <Text style={[styles.loadingText, { color: colors.textSecondary }]}>{t('home.loadingEvents')}</Text>
             </View>
           ) : error ? (
             <View style={styles.errorContainer}>
@@ -709,13 +711,13 @@ const HomeScreen = () => {
                 style={[styles.retryButton, { backgroundColor: colors.primary }]}
                 onPress={() => fetchEvents()}
               >
-                <Text style={[styles.retryButtonText, { color: theme === 'dark' ? '#000' : '#fff' }]}>Retry</Text>
+                <Text style={[styles.retryButtonText, { color: theme === 'dark' ? '#000' : '#fff' }]}>{t('common.retry')}</Text>
               </TouchableOpacity>
             </View>
           ) : events.length === 0 ? (
             <View style={styles.emptyContainer}>
               <Feather name="calendar" size={48} color={colors.textSecondary} />
-              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>No events available</Text>
+              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>{t('home.noEvents')}</Text>
             </View>
           ) : (
             <FlatList
@@ -734,17 +736,17 @@ const HomeScreen = () => {
         {/* Popular Events */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Popular Near You</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('home.popularNearYou')}</Text>
             {events.length > 0 && (
               <TouchableOpacity onPress={() => {
                 const selectedCat = categories.find(cat => cat.id === selectedCategory);
                 (navigation as any).navigate('SeeAll', {
-                  title: 'Popular Near You',
+                  title: t('home.popularNearYou'),
                   data: events,
                   category: selectedCat?.value,
                 });
               }}>
-                <Text style={[styles.seeAll, { color: colors.primary }]}>See All</Text>
+                <Text style={[styles.seeAll, { color: colors.primary }]}>{t('common.seeAll')}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -777,7 +779,7 @@ const HomeScreen = () => {
             }
           ]}>
             <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: colors.text }]}>Advanced Search</Text>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>{t('home.advancedSearch')}</Text>
               <TouchableOpacity onPress={() => setIsFilterVisible(false)}>
                 <Ionicons name="close" size={24} color={colors.text} />
               </TouchableOpacity>
@@ -785,11 +787,11 @@ const HomeScreen = () => {
 
             <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
               {/* Search Text */}
-              <Text style={[styles.filterLabel, { color: colors.textSecondary }]}>Search Text</Text>
+              <Text style={[styles.filterLabel, { color: colors.textSecondary }]}>{t('home.searchText')}</Text>
               <View style={[styles.locationInput, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
                 <Ionicons name="search-outline" size={20} color={colors.textSecondary} />
                 <TextInput
-                  placeholder="Search events, artists, venues..."
+                  placeholder={t('home.searchPlaceholder')}
                   placeholderTextColor={colors.textSecondary}
                   style={{ flex: 1, marginLeft: 10, color: colors.text }}
                   value={searchText}

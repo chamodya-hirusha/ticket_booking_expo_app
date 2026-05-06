@@ -877,7 +877,7 @@ const MyTickets = () => {
             style={[styles.retryButton, { backgroundColor: colors.primary, marginTop: 20 }]}
             onPress={() => (navigation as any).navigate('MainTabs', { screen: 'HomeTab' })}
           >
-            <Text style={[styles.retryButtonText, { color: theme === 'dark' ? '#000' : '#fff' }]}>Browse Events</Text>
+            <Text style={[styles.retryButtonText, { color: theme === 'dark' ? '#000' : '#fff' }]}>Discover Events</Text>
           </TouchableOpacity>
         </View>
       ) : (

@@ -9,13 +9,26 @@
     "back": "Indietro",
     "error": "Errore",
     "success": "Successo",
-    "noData": "Nessun dato trovato"
+    "noData": "Nessun dato trovato",
+    "search": "Cerca",
+    "apply": "Applica",
+    "reset": "Ripristina",
+    "close": "Chiudi",
+    "confirm": "Conferma",
+    "anytime": "In qualsiasi momento",
+    "today": "Oggi",
+    "tomorrow": "Domani",
+    "thisWeek": "Questa settimana",
+    "noImage": "Nessuna immagine",
+    "seeAll": "Vedi tutto",
+    "goBack": "Torna indietro"
   },
   "tabs": {
     "home": "Home",
     "favorites": "Preferiti",
     "tickets": "Biglietti",
-    "profile": "Profilo"
+    "profile": "Profilo",
+    "explore": "Esplora"
   },
   "profile": {
     "title": "Il Mio Profilo",
@@ -34,16 +47,47 @@
     "paid": "Pagato",
     "pending": "In attesa",
     "refunded": "Rimborsato",
-    "failed": "Fallito"
+    "failed": "Fallito",
+    "hi": "Ciao",
+    "welcomeBack": "Benvenuto"
   },
   "home": {
     "welcome": "Benvenuto",
     "featuredEvents": "Eventi in Evidenza",
     "upcomingEvents": "Prossimi Eventi",
-    "seeAll": "Vedi Tutti",
-    "searchPlaceholder": "Cerca eventi...",
+    "popularNearYou": "Popolari vicino a te",
+    "seeAll": "Vedi tutto",
+    "searchPlaceholder": "Cerca eventi, artisti, luoghi...",
     "noEvents": "Nessun evento disponibile",
-    "categories": "Categorie"
+    "categories": "Categorie",
+    "loadingEvents": "Caricamento eventi...",
+    "advancedSearch": "Ricerca Avanzata",
+    "searchText": "Testo di ricerca",
+    "category": "Categoria",
+    "location": "Luogo",
+    "startDate": "Data inizio",
+    "endDate": "Data fine",
+    "priceRange": "Fascia di prezzo",
+    "sortBy": "Ordina per",
+    "date": "Data",
+    "price": "Prezzo",
+    "ascending": "Crescente",
+    "descending": "Decrescente"
+  },
+  "explore": {
+    "title": "Esplora",
+    "subtitle": "Scopri eventi vicino a te",
+    "searchPlaceholder": "Cerca eventi, artisti...",
+    "featuredEvents": "Eventi in Evidenza",
+    "popularNearby": "Popolari nelle vicinanze",
+    "filterEvents": "Filtra Eventi",
+    "date": "Data",
+    "priceRange": "Fascia di prezzo",
+    "location": "Luogo",
+    "enterCity": "Inserisci città o distretto",
+    "reset": "Ripristina",
+    "applyFilters": "Applica Filtri",
+    "book": "Prenota"
   },
   "favorites": {
     "title": "Preferiti",
@@ -58,7 +102,10 @@
     "used": "Usato",
     "expired": "Scaduto",
     "downloadTicket": "Scarica Biglietto",
-    "viewDetails": "Vedi Dettagli"
+    "viewDetails": "Vedi Dettagli",
+    "ticketCount": "{{count}} Biglietti",
+    "upcoming": "Prossimi",
+    "past": "Passati"
   },
   "auth": {
     "signIn": "Accedi",
@@ -70,7 +117,15 @@
     "noAccount": "Non hai un account?",
     "hasAccount": "Hai già un account?",
     "name": "Nome Completo",
-    "phone": "Numero di Telefono"
+    "phone": "Numero di Telefono",
+    "welcome": "Bentornato!",
+    "signInToContinue": "Accedi per continuare il tuo viaggio",
+    "createAccount": "Crea Account",
+    "joinUs": "Unisciti a noi e inizia a prenotare i tuoi eventi preferiti",
+    "signingIn": "Accesso in corso...",
+    "signingUp": "Registrazione in corso...",
+    "authRequired": "Autenticazione Richiesta",
+    "pleaseSignIn": "Per favore accedi per completare il pagamento"
   },
   "eventDetails": {
     "about": "Informazioni",
@@ -83,12 +138,77 @@
     "soldOut": "Esaurito",
     "vip": "VIP",
     "premium": "Premium",
-    "general": "Generale"
+    "general": "Generale",
+    "eventDescription": "Descrizione Evento",
+    "organizer": "Organizzatore",
+    "getTickets": "Ottieni Biglietti"
+  },
+  "confirmPay": {
+    "title": "Conferma e Paga",
+    "orderSummary": "Riepilogo Ordine",
+    "personalDetails": "Dettagli Personali",
+    "payment": "Pagamento",
+    "paymentDescription": "Clicca \"Paga Ora\" per completare il pagamento in modo sicuro tramite Stripe.",
+    "completePayment": "COMPLETA IL PAGAMENTO",
+    "serviceFee": "Commissione di servizio",
+    "total": "Totale",
+    "name": "Nome",
+    "email": "Email",
+    "phone": "Telefono",
+    "notProvided": "Non fornito",
+    "eventMissing": "Le informazioni sull'evento mancano",
+    "invalidEvent": "L'ID dell'evento non è valido.",
+    "invalidQuantity": "Seleziona tra 1 e 10 biglietti.",
+    "reservationFailed": "Prenotazione Fallita",
+    "paymentError": "Errore di Pagamento",
+    "paymentFailed": "Pagamento Fallito",
+    "unexpectedError": "Si è verificato un errore imprevisto. Riprova."
+  },
+  "paymentSuccess": {
+    "title": "Pagamento Riuscito",
+    "successMessage": "Il tuo pagamento è stato elaborato con successo.",
+    "bookingConfirmed": "Prenotazione Confermata",
+    "ticketDetails": "Dettagli Biglietto",
+    "transactionId": "ID Transazione",
+    "viewTicket": "Vedi Biglietto",
+    "backToHome": "Torna alla Home",
+    "downloadReceipt": "Scarica Ricevuta"
+  },
+  "ticketSelection": {
+    "title": "Seleziona Biglietti",
+    "availableTickets": "Biglietti Disponibili",
+    "quantity": "Quantità",
+    "total": "Totale",
+    "next": "Avanti",
+    "selectQuantity": "Seleziona Quantità"
+  },
+  "ticketDetail": {
+    "title": "Dettagli Biglietto",
+    "eventInfo": "Informazioni Evento",
+    "ticketInfo": "Informazioni Biglietto",
+    "orderInfo": "Informazioni Ordine",
+    "status": "Stato",
+    "orderId": "ID Ordine",
+    "purchaseDate": "Data di acquisto",
+    "showQr": "Mostra Codice QR",
+    "hideQr": "Nascondi Codice QR",
+    "scanInstructions": "Scansiona questo codice QR all'ingresso dell'evento"
+  },
+  "editProfile": {
+    "title": "Modifica Profilo",
+    "saveChanges": "Salva Modifiche",
+    "changePhoto": "Cambia Foto",
+    "fullName": "Nome Completo",
+    "email": "Email",
+    "phone": "Numero di Telefono",
+    "updateSuccess": "Profilo aggiornato con successo",
+    "updateError": "Impossibile aggiornare il profilo"
   },
   "notifications": {
     "title": "Notifiche",
     "noNotifications": "Nessuna notifica",
-    "noNotificationsDesc": "Sei aggiornato!"
+    "noNotificationsDesc": "Sei aggiornato!",
+    "markAllRead": "Segna tutto come letto"
   },
   "support": {
     "title": "Aiuto e Supporto",
@@ -97,7 +217,9 @@
     "email": "Supporto Email",
     "sendMessage": "Invia Messaggio",
     "subject": "Oggetto",
-    "message": "Messaggio"
+    "message": "Messaggio",
+    "sendSuccess": "Messaggio inviato con successo",
+    "sendError": "Impossibile inviare il messaggio"
   },
   "settings": {
     "language": "Lingua",
