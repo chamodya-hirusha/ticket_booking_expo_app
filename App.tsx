@@ -225,8 +225,8 @@ const App = () => {
   return (
     <StripeProvider
       publishableKey={STRIPE_CONFIG.PUBLISHABLE_KEY}
-      merchantIdentifier="merchant.com.ticketbooking" // Optional: required for Apple Pay
-      urlScheme="ticketbooking" // Optional: required for 3D Secure and bank redirects
+      merchantIdentifier="merchant.krowd.ch" // Optional: required for Apple Pay
+      urlScheme="krowd.ch" // Optional: required for 3D Secure and bank redirects
     >
       <ThemeProvider>
         <LanguageProvider>

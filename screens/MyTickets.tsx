@@ -15,18 +15,23 @@ import {
 import { Image } from 'expo-image';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons, Feather } from '@expo/vector-icons';
-import { Ticket, getEventImageUrl } from '../constants';
+import { Ticket, getEventImageUrl, Event as ConstantEvent } from '../constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { apiService } from '../services/api';
+import { Reservation, StripePayment, PaginatedResponse, Event as ApiEvent } from '../services/api/types';
 import * as Sharing from 'expo-sharing';
 import { generateTicketPDF } from '../utils/ticketPdfGenerator';
 import { toast } from '../services/toast';
 import { useCustomToast } from '../context/ToastContext';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../types/navigation';
+
+type NavigationProp = StackNavigationProp<RootStackParamList>;
 
 const MyTickets = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp>();
   const { colors, theme } = useTheme();
   const { isAuthenticated, handlePermissionError } = useAuth();
   const customToast = useCustomToast();
@@ -74,9 +79,9 @@ const MyTickets = () => {
       // Handle access denied or permission errors
       if (!response.success) {
         const errorMsg = response.error || response.message || 'Failed to load tickets';
-        const responseData = (response as any).data;
-        const httpStatus = responseData?._status;
-        const responseCode = responseData?.code;
+        const responseData = response.data as Record<string, unknown> | undefined;
+        const httpStatus = responseData?._status as number | undefined;
+        const responseCode = responseData?.code as string | undefined;
 
         // Check if it's an access denied or session expired error (401, 403, or code "05")
         if (httpStatus === 401 || httpStatus === 403 || responseCode === '05' ||
@@ -108,9 +113,9 @@ const MyTickets = () => {
       }
 
       if (response.success && response.data) {
-        let reservationsArray: any[] = [];
-        let paginationData: any = null;
-        const dataObj = response.data as any;
+        let reservationsArray: Reservation[] = [];
+        let paginationData: { totalPages: number; totalElements: number; number: number } | null = null;
+        const dataObj = response.data;
 
         // Handle nested response structure (same as events)
         if (Array.isArray(dataObj)) {
@@ -119,15 +124,16 @@ const MyTickets = () => {
           // Handle response with 'code' field (alternative API format)
           if ('code' in dataObj && 'content' in dataObj) {
             // Response format: { code: "00", content: PaginatedResponse, message: "..." }
-            const paginatedResponse = dataObj.content;
+            const paginatedResponse = (dataObj as Record<string, unknown>).content as Record<string, unknown>;
             if (paginatedResponse && typeof paginatedResponse === 'object' && 'content' in paginatedResponse) {
-              if (Array.isArray(paginatedResponse.content)) {
-                reservationsArray = paginatedResponse.content;
+              const nestedContent = paginatedResponse.content;
+              if (Array.isArray(nestedContent)) {
+                reservationsArray = nestedContent;
                 // Extract pagination metadata
                 paginationData = {
-                  totalPages: paginatedResponse.totalPages || 0,
-                  totalElements: paginatedResponse.totalElements || 0,
-                  number: paginatedResponse.number || page,
+                  totalPages: (paginatedResponse.totalPages as number) || 0,
+                  totalElements: (paginatedResponse.totalElements as number) || 0,
+                  number: (paginatedResponse.number as number) || page,
                 };
               } else {
                 reservationsArray = [];
@@ -141,28 +147,31 @@ const MyTickets = () => {
           }
           // Handle standard PaginatedResponse format
           else if ('content' in dataObj) {
-            if (Array.isArray(dataObj.content)) {
+            const dataObjTyped = dataObj as Record<string, unknown>;
+            if (Array.isArray(dataObjTyped.content)) {
               // Direct array in content property
-              reservationsArray = dataObj.content;
+              reservationsArray = dataObjTyped.content;
               // Extract pagination metadata if available
-              if ('totalPages' in dataObj) {
+              if ('totalPages' in dataObjTyped) {
                 paginationData = {
-                  totalPages: dataObj.totalPages || 0,
-                  totalElements: dataObj.totalElements || 0,
-                  number: dataObj.number || page,
+                  totalPages: (dataObjTyped.totalPages as number) || 0,
+                  totalElements: (dataObjTyped.totalElements as number) || 0,
+                  number: (dataObjTyped.number as number) || page,
                 };
               }
-            } else if (dataObj.content === null || dataObj.content === undefined) {
+            } else if (dataObjTyped.content === null || dataObjTyped.content === undefined) {
               reservationsArray = [];
-            } else if (dataObj.content && typeof dataObj.content === 'object' && 'content' in dataObj.content) {
+            } else if (dataObjTyped.content && typeof dataObjTyped.content === 'object' && 'content' in (dataObjTyped.content as object)) {
               // Nested structure: response.data.content.content (PaginatedResponse wrapper)
-              if (Array.isArray(dataObj.content.content)) {
-                reservationsArray = dataObj.content.content;
+              const contentWrapper = dataObjTyped.content as Record<string, unknown>;
+              const nestedContent = contentWrapper.content;
+              if (Array.isArray(nestedContent)) {
+                reservationsArray = nestedContent;
                 // Extract pagination metadata from parent
                 paginationData = {
-                  totalPages: dataObj.content.totalPages || dataObj.totalPages || 0,
-                  totalElements: dataObj.content.totalElements || dataObj.totalElements || 0,
-                  number: dataObj.content.number || dataObj.number || page,
+                  totalPages: (contentWrapper.totalPages as number) || (dataObjTyped.totalPages as number) || 0,
+                  totalElements: (contentWrapper.totalElements as number) || (dataObjTyped.totalElements as number) || 0,
+                  number: (contentWrapper.number as number) || (dataObjTyped.number as number) || page,
                 };
               } else {
                 reservationsArray = [];
@@ -209,8 +218,8 @@ const MyTickets = () => {
               // Continue despite errors to show reservations
             }
           } else if (paymentsResponse.success && paymentsResponse.data) {
-            let paymentsArray: any[] = [];
-            const dataObj = paymentsResponse.data as any;
+            let paymentsArray: StripePayment[] = [];
+            const dataObj = paymentsResponse.data;
 
             // Handle different response structures
             if (Array.isArray(dataObj)) {
@@ -220,24 +229,27 @@ const MyTickets = () => {
                 const content = dataObj.content;
                 if (Array.isArray(content)) {
                   paymentsArray = content;
-                } else if (content && typeof content === 'object' && 'content' in content) {
-                  if (Array.isArray(content.content)) {
-                    paymentsArray = content.content;
+                } else if (content && typeof content === 'object' && 'content' in (content as object)) {
+                  const nestedContent = (content as Record<string, unknown>).content;
+                  if (Array.isArray(nestedContent)) {
+                    paymentsArray = nestedContent;
                   }
                 }
-              } else if ('content' in dataObj) {
-                if (Array.isArray(dataObj.content)) {
-                  paymentsArray = dataObj.content;
-                } else if (dataObj.content && typeof dataObj.content === 'object' && 'content' in dataObj.content) {
-                  if (Array.isArray(dataObj.content.content)) {
-                    paymentsArray = dataObj.content.content;
+              } else if ('content' in (dataObj as object)) {
+                const content = (dataObj as Record<string, unknown>).content;
+                if (Array.isArray(content)) {
+                  paymentsArray = content;
+                } else if (content && typeof content === 'object' && 'content' in (content as object)) {
+                  const nestedContent = (content as Record<string, unknown>).content;
+                  if (Array.isArray(nestedContent)) {
+                    paymentsArray = nestedContent;
                   }
                 }
               }
             }
 
             // Filter payments with SUCCESS status and collect reservation IDs
-            paymentsArray.forEach((payment: any) => {
+            paymentsArray.forEach((payment) => {
               const rawStatus = payment.status || payment.paymentStatus || '';
               const paymentStatus = String(rawStatus).toUpperCase().trim();
 
@@ -255,7 +267,7 @@ const MyTickets = () => {
         }
 
         // Filter reservations to only include those with SUCCESS payment status
-        const reservationsWithSuccessPayment = reservationsArray.filter((reservation: any) => {
+        const reservationsWithSuccessPayment = reservationsArray.filter((reservation) => {
           // Check if reservation ID is in the successful payments set
           if (successfulPaymentReservationIds.has(Number(reservation.id))) {
             return true;
@@ -280,7 +292,7 @@ const MyTickets = () => {
         });
 
         // Fetch event details for each reservation and map to tickets
-        const ticketsPromises = reservationsWithSuccessPayment.map(async (reservation: any) => {
+        const ticketsPromises = reservationsWithSuccessPayment.map(async (reservation) => {
           try {
             // Check if eventDetails is already included in reservation (from API)
             let event = reservation.eventDetails || null;
@@ -290,18 +302,19 @@ const MyTickets = () => {
               const eventResponse = await apiService.event.getPublicEvent(reservation.eventId);
 
               if (eventResponse.success && eventResponse.data) {
-                const responseData = eventResponse.data as any;
+                const responseData = eventResponse.data;
 
                 // Handle different response structures (same as EventDetails screen)
-                if (responseData?.content && typeof responseData.content === 'object') {
+                const anyData = responseData as unknown as Record<string, unknown>;
+                if (anyData?.content && typeof anyData.content === 'object') {
                   // Response has nested content structure
-                  event = responseData.content;
-                } else if (responseData?.id) {
+                  event = anyData.content as ApiEvent;
+                } else if (anyData?.id) {
                   // Event is directly in response.data
-                  event = responseData;
+                  event = responseData as ApiEvent;
                 } else {
                   // Try to find event data anywhere in the response
-                  event = responseData;
+                  event = responseData as ApiEvent;
                 }
               }
             }
@@ -362,9 +375,9 @@ const MyTickets = () => {
               'TBD';
 
             // Extract image from various possible formats
-            const eventImage = (event as any)?.imageUrl ||
-              (event as any)?.image_url ||
-              (event as any)?.image ||
+            const eventImage = event?.imageUrl ||
+              event?.image_url ||
+              event?.image ||
               reservation.eventDetails?.imageUrl ||
               reservation.eventDetails?.image_url ||
               reservation.eventDetails?.image ||
@@ -373,17 +386,17 @@ const MyTickets = () => {
             // Ensure qrCode is properly set (qrToken from reservation)
             const qrCodeValue = reservation.qrToken ||
               reservation.qrCode ||
-              (reservation as any)?.qr_token ||
+              reservation.qr_token ||
               undefined;
 
             // Extract seat information from reservation
             // Check multiple possible field names for seat data
             const seatValue = reservation.seat ||
               reservation.seatNumber ||
-              (reservation as any)?.seat_number ||
-              (reservation as any)?.seatInfo ||
-              (reservation as any)?.seat_info ||
-              (reservation as any)?.section ||
+              reservation.seat_number ||
+              reservation.seatInfo ||
+              reservation.seat_info ||
+              reservation.section ||
               undefined;
 
             // If no seat info, generate a default based on ticket tier
@@ -416,8 +429,9 @@ const MyTickets = () => {
             };
 
             return ticket;
-          } catch (err: any) {
+          } catch (err: unknown) {
             // Return a ticket with minimal info if processing fails
+            const error = err as Error;
             return {
               id: String(reservation.id),
               eventId: String(reservation.eventId),
@@ -441,8 +455,9 @@ const MyTickets = () => {
         setError(errorMsg);
         setTickets([]);
       }
-    } catch (err: any) {
-      const errorMessage = err.message || 'Network error. Please check your connection.';
+    } catch (err: unknown) {
+      const error = err as Error;
+      const errorMessage = error.message || 'Network error. Please check your connection.';
       setError(errorMessage);
       setTickets([]);
     } finally {
@@ -509,7 +524,8 @@ const MyTickets = () => {
           'PDF Download Failed'
         );
       }
-    } catch (error: any) {
+    } catch (err: unknown) {
+      const error = err as Error;
       customToast.error(
         error.message || 'Failed to download ticket PDF. Please try again.',
         'PDF Download Failed'
@@ -551,7 +567,8 @@ const MyTickets = () => {
           'Share Failed'
         );
       }
-    } catch (error: any) {
+    } catch (err: unknown) {
+      const error = err as Error;
       customToast.error(
         error.message || 'Failed to generate ticket PDF. Please try again.',
         'PDF Generation Failed'
@@ -747,9 +764,9 @@ const MyTickets = () => {
       ]}
       onPress={() => {
         if (item.status === 'Used') {
-          (navigation as any).navigate('InvalidTicket');
+          navigation.navigate('InvalidTicket');
         } else {
-          (navigation as any).navigate('TicketDetail', { ticket: item });
+          navigation.navigate('TicketDetail', { ticket: item });
         }
       }}
       activeOpacity={0.9}
@@ -875,7 +892,7 @@ const MyTickets = () => {
           </Text>
           <TouchableOpacity
             style={[styles.retryButton, { backgroundColor: colors.primary, marginTop: 20 }]}
-            onPress={() => (navigation as any).navigate('MainTabs', { screen: 'HomeTab' })}
+            onPress={() => navigation.navigate('MainTabs', { screen: 'HomeTab' })}
           >
             <Text style={[styles.retryButtonText, { color: theme === 'dark' ? '#000' : '#fff' }]}>Discover Events</Text>
           </TouchableOpacity>

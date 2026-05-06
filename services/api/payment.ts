@@ -1,5 +1,5 @@
 import { BaseApiService } from './base';
-import { ApiResponse, StripePaymentRequest, StripePaymentResponse, StripeRefundRequest } from './types';
+import { ApiResponse, StripePaymentRequest, StripePaymentResponse, StripeRefundRequest, StripePayment } from './types';
 
 export class PaymentApiService extends BaseApiService {
   async createStripePayment(
@@ -31,8 +31,8 @@ export class PaymentApiService extends BaseApiService {
       body: JSON.stringify(requestBody),
     });
   }
-  async getUserPayments(): Promise<ApiResponse<any[]>> {
-    return this.request<any[]>('/v1/payment/stripe/user-payments', {
+  async getUserPayments(): Promise<ApiResponse<StripePayment[]>> {
+    return this.request<StripePayment[]>('/v1/payment/stripe/user-payments', {
       method: 'GET',
     });
   }

@@ -1,6 +1,5 @@
 // API Configuration
 export const API_CONFIG = {
-  // BASE_URL: process.env.EXPO_PUBLIC_API_BASE_URL || 'https://tickbookapi.braintisa.com/api',
   BASE_URL: process.env.EXPO_PUBLIC_API_BASE_URL || 'http://kgs8o8swgog8sgk48ko8oo40.72.61.111.83.sslip.io/api',
   TIMEOUT: 30000, // 30 seconds
 };

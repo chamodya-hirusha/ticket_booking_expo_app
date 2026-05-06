@@ -2,7 +2,7 @@
 
 export interface ApiResponse<T> {
   success: boolean;
-  data?: T;
+  data?: T | (Record<string, unknown> & { _status?: number; code?: string });
   message?: string;
   error?: string;
 }
@@ -72,9 +72,11 @@ export interface VendorRegisterRequestDTO {
 export interface Event {
   id: string;
   name: string;
+  eventName?: string; // Alternative field name
   slug: string;
   description: string;
   location: string;
+  eventLocation?: string; // Alternative field name
   date: string;
   startTime: string;
   vipTicketLimit: number;
@@ -86,8 +88,8 @@ export interface Event {
   eventCategory: string;
   eventStatus: string;
   image?: string;
-  imageUrl?: string; // Backend returns imageUrl (camelCase)
-  image_url?: string; // Backend might return image_url (snake_case) depending on Jackson config
+  imageUrl?: string;
+  image_url?: string;
 }
 
 export interface EventCreateRequest {
@@ -158,11 +160,17 @@ export interface StripePaymentResponse {
   id: string;
   intentId?: string;
   status: string;
+  paymentStatus?: string; // Alternative field name
   amount: number;
   currency: string;
   reservationId: number;
   clientSecret?: string;
+  reservation?: {
+    id: number | string;
+  };
 }
+
+export interface StripePayment extends StripePaymentResponse {}
 
 export interface StripeRefundRequest {
   reservationId: number;
@@ -218,6 +226,24 @@ export interface Reservation {
   ticketPrice: number;
   totalAmount: number;
   status: ReservationStatus;
+  reservationStatus?: string; // Alternative field name
+  reservationDate?: string;
+  isCheckedIn?: boolean;
+  eventDetails?: Event;
+  paymentStatus?: string;
+  payment?: {
+    status?: string;
+    paymentStatus?: string;
+  };
+  qrToken?: string;
+  qrCode?: string;
+  qr_token?: string;
+  seat?: string;
+  seatNumber?: string;
+  seat_number?: string;
+  seatInfo?: string;
+  seat_info?: string;
+  section?: string;
   createdAt: string;
   updatedAt: string;
 }

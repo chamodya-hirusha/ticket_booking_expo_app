@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Mobile App",
-    "slug": "mobile-app",
+    "name": "Krowd.ch",
+    "slug": "krowd.ch",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/Logo.png",
-    "scheme": "mobileapp",
+    "scheme": "krowd.ch",
     "sdkVersion": "54.0.0",
     "platforms": [
       "ios",
@@ -45,14 +45,14 @@
       [
         "@stripe/stripe-react-native",
         {
-          "merchantIdentifier": "merchant.com.mobileapp",
+          "merchantIdentifier": "merchant.krowd.ch",
           "enableGooglePay": false
         }
       ]
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.mobileapp",
+      "bundleIdentifier": "krowd.ch.app",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to save ticket QR codes.",
         "NSPhotoLibraryAddUsageDescription": "This app needs permission to save ticket QR codes to your photo library.",
@@ -72,7 +72,7 @@
         "resizeMode": "contain",
         "backgroundColor": "#0a0a1a"
       },
-      "package": "com.mobileapp",
+      "package": "krowd.ch.app",
       "permissions": [
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",

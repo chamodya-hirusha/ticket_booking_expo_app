@@ -1,5 +1,20 @@
 {
-  "name": "CyberPunk Tickets",
-  "description": "A futuristic, cyberpunk-themed mobile ticket booking application built with React and Tailwind CSS.",
-  "requestFramePermissions": []
+  "name": "Krowd.ch",
+  "description": "A modern and intuitive mobile ticketing application for iOS and Android built with Expo and Stripe for seamless event access management. Features secure ticket delivery, offline access, and instant entry scanning.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "photo-library",
+    "notifications",
+    "location",
+    "contacts",
+    "face-id",
+    "nfc",
+    "bluetooth",
+    "calendar",
+    "media-library",
+    "motion",
+    "speech-recognition",
+    "screen-recording"
+  ]
 }
