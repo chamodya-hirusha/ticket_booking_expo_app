@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Krowd.ch",
-    "slug": "krowd.ch",
+    "slug": "krowdch",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/Logo.png",
@@ -74,6 +74,7 @@
       },
       "package": "krowd.ch.app",
       "permissions": [
+        "INTERNET",
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
         "READ_MEDIA_IMAGES",
@@ -95,8 +96,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "03b0a56a-6861-4c38-825c-b2af2bf67517"
+        "projectId": "272cc1d3-c777-47c8-b03c-748ef8f256e8"
       }
-    }
+    },
+    "owner": "chamodya_hirusha"
   }
 }
