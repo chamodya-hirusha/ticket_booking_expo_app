@@ -16,6 +16,7 @@ import { Feather } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigation } from '@react-navigation/native';
+import { useLanguage } from '../context/LanguageContext';
 
 const { width } = Dimensions.get('window');
 
@@ -39,6 +40,7 @@ const EditProfile = () => {
    const { colors, theme } = useTheme();
    const { user, updateProfile, refreshUser, isLoading: authLoading } = useAuth();
    const navigation = useNavigation();
+   const { t } = useLanguage();
 
    const [selectedAvatar, setSelectedAvatar] = useState(user?.avatar || AVATAR_OPTIONS[0].uri);
    const [isLoading, setIsLoading] = useState(false);
@@ -65,7 +67,7 @@ const EditProfile = () => {
 
    const handleSave = async () => {
       if (!user?.name) {
-         Alert.alert('Error', 'User data not available');
+         Alert.alert(t('common.error'), t('editProfile.userDataError'));
          return;
       }
 
@@ -74,14 +76,14 @@ const EditProfile = () => {
       setIsLoading(false);
 
       if (success) {
-         Alert.alert('Success', 'Avatar updated successfully', [
+         Alert.alert(t('common.success'), t('editProfile.avatarSuccess'), [
             {
-               text: 'OK',
+               text: t('common.ok'),
                onPress: () => navigation.goBack()
             }
          ]);
       } else {
-         Alert.alert('Error', 'Failed to update avatar');
+         Alert.alert(t('common.error'), t('editProfile.avatarError'));
       }
    };
 
@@ -97,7 +99,7 @@ const EditProfile = () => {
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                <Feather name="arrow-left" size={24} color={colors.text} />
             </TouchableOpacity>
-            <Text style={[styles.headerTitle, { color: colors.text }]}>View Profile</Text>
+            <Text style={[styles.headerTitle, { color: colors.text }]}>{t('editProfile.viewProfile')}</Text>
             <View style={styles.placeholder} />
          </View>
 
@@ -115,13 +117,13 @@ const EditProfile = () => {
                   </View>
                </TouchableOpacity>
                <Text style={[styles.avatarHint, { color: colors.textSecondary }]}>
-                  Tap to change avatar
+                  {t('editProfile.tapToChange')}
                </Text>
             </View>
 
             {/* Name (Read-only) */}
             <View style={styles.section}>
-               <Text style={[styles.sectionTitle, { color: colors.text }]}>Name</Text>
+               <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('editProfile.fullName')}</Text>
                <View style={[styles.inputWrapper, { backgroundColor: colors.inputBackground, borderColor: colors.border, opacity: 0.6 }]}>
                   <Feather name="user" size={20} color={colors.textSecondary} />
                   <TextInput
@@ -131,13 +133,13 @@ const EditProfile = () => {
                   />
                </View>
                <Text style={[styles.helperText, { color: colors.textSecondary }]}>
-                  Name cannot be changed
+                  {t('editProfile.nameCannotBeChanged')}
                </Text>
             </View>
 
             {/* Email (Read-only) */}
             <View style={styles.section}>
-               <Text style={[styles.sectionTitle, { color: colors.text }]}>Email</Text>
+               <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('editProfile.email')}</Text>
                <View style={[styles.inputWrapper, { backgroundColor: colors.inputBackground, borderColor: colors.border, opacity: 0.6 }]}>
                   <Feather name="mail" size={20} color={colors.textSecondary} />
                   <TextInput
@@ -147,14 +149,14 @@ const EditProfile = () => {
                   />
                </View>
                <Text style={[styles.helperText, { color: colors.textSecondary }]}>
-                  Email cannot be changed
+                  {t('editProfile.emailCannotBeChanged')}
                </Text>
             </View>
 
             {/* Phone (Read-only) */}
             {user?.phone && (
                <View style={styles.section}>
-                  <Text style={[styles.sectionTitle, { color: colors.text }]}>Phone</Text>
+                  <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('editProfile.phone')}</Text>
                   <View style={[styles.inputWrapper, { backgroundColor: colors.inputBackground, borderColor: colors.border, opacity: 0.6 }]}>
                      <Feather name="phone" size={20} color={colors.textSecondary} />
                      <TextInput
@@ -174,7 +176,7 @@ const EditProfile = () => {
                activeOpacity={0.8}
             >
                <Text style={[styles.saveButtonText, { color: theme === 'dark' ? '#000' : '#fff' }]}>
-                  {isLoading ? 'Saving...' : 'Save Avatar'}
+                  {isLoading ? t('editProfile.saving') : t('editProfile.saveAvatar')}
                </Text>
             </TouchableOpacity>
 
@@ -197,7 +199,7 @@ const EditProfile = () => {
                   }
                ]}>
                   <View style={styles.modalHeader}>
-                     <Text style={[styles.modalTitle, { color: colors.text }]}>Choose Avatar</Text>
+                     <Text style={[styles.modalTitle, { color: colors.text }]}>{t('editProfile.chooseAvatar')}</Text>
                      <TouchableOpacity onPress={() => setIsAvatarModalVisible(false)}>
                         <Feather name="x" size={24} color={colors.text} />
                      </TouchableOpacity>
@@ -205,7 +207,7 @@ const EditProfile = () => {
 
                   <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
                      <Text style={[styles.modalSubtitle, { color: colors.textSecondary }]}>
-                        Select your favorite avatar
+                        {t('editProfile.selectAvatar')}
                      </Text>
                      <View style={styles.avatarGrid}>
                         {AVATAR_OPTIONS.map((avatar) => (

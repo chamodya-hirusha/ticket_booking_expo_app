@@ -16,12 +16,14 @@ import { useFavorites } from '../context/FavoritesContext';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Event, getEventImageUrl } from '../constants';
+import { useLanguage } from '../context/LanguageContext';
 
 const { width } = Dimensions.get('window');
 
 const Favorites = () => {
     const { colors, theme } = useTheme();
     const { favorites, toggleFavorite } = useFavorites();
+    const { t } = useLanguage();
     const navigation = useNavigation();
 
     const renderFavoriteItem = ({ item }: { item: Event }) => (
@@ -68,16 +70,16 @@ const Favorites = () => {
             <View style={[styles.emptyIconContainer, { backgroundColor: colors.surface }]}>
                 <Feather name="heart" size={64} color={colors.textSecondary} />
             </View>
-            <Text style={[styles.emptyTitle, { color: colors.text }]}>No Favorites Yet</Text>
+            <Text style={[styles.emptyTitle, { color: colors.text }]}>{t('favorites.noFavorites')}</Text>
             <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
-                Start adding events to your favorites by tapping the heart icon
+                {t('favorites.noFavoritesDesc')}
             </Text>
             <TouchableOpacity
                 style={[styles.exploreButton, { backgroundColor: colors.primary }]}
                 onPress={() => (navigation as any).navigate('MainTabs', { screen: 'HomeTab' })}
             >
                 <Text style={[styles.exploreButtonText, { color: theme === 'dark' ? '#000' : '#fff' }]}>
-                    Explore Events
+                    {t('favorites.exploreEvents')}
                 </Text>
             </TouchableOpacity>
         </View>
@@ -88,9 +90,9 @@ const Favorites = () => {
             {/* Header */}
             <View style={styles.header}>
                 <View>
-                    <Text style={[styles.headerTitle, { color: colors.text }]}>Favorites</Text>
+                    <Text style={[styles.headerTitle, { color: colors.text }]}>{t('favorites.title')}</Text>
                     <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>
-                        {favorites.length} {favorites.length === 1 ? 'event' : 'events'} saved
+                        {favorites.length} {favorites.length === 1 ? t('favorites.eventSaved') : t('favorites.eventsSaved')}
                     </Text>
                 </View>
             </View>

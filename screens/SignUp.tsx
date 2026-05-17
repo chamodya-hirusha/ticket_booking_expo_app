@@ -17,6 +17,7 @@ import { useAuth } from '../context/AuthContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { VerifyAccountModal } from '../components/modals/AuthModals';
 import { toast } from '../services/toast';
+import { useLanguage } from '../context/LanguageContext';
 
 // Requirement Item Component
 const RequirementItem = ({ met, text, colors }: { met: boolean; text: string; colors: any }) => (
@@ -34,6 +35,7 @@ const RequirementItem = ({ met, text, colors }: { met: boolean; text: string; co
 
 const SignUp = ({ navigation }: any) => {
     const { colors, theme } = useTheme();
+    const { t } = useLanguage();
     const { signUp, signIn } = useAuth();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -52,7 +54,7 @@ const SignUp = ({ navigation }: any) => {
     // Password validation function
     const validatePassword = (pwd: string): { isValid: boolean; error?: string } => {
         if (pwd.length < 6) {
-            return { isValid: false, error: 'Password must be at least 6 characters' };
+            return { isValid: false, error: t('auth.reqLength') };
         }
         
         const hasUpperCase = /[A-Z]/.test(pwd);
@@ -63,7 +65,7 @@ const SignUp = ({ navigation }: any) => {
         if (!hasUpperCase || !hasLowerCase || !hasNumber || !hasSpecialChar) {
             return {
                 isValid: false,
-                error: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.'
+                error: t('auth.invalidPassword')
             };
         }
         
@@ -85,23 +87,23 @@ const SignUp = ({ navigation }: any) => {
 
     const handleSignUp = async () => {
         if (!name || !email || !phone || !password || !confirmPassword) {
-            setError('Please fill in all fields');
+            setError(t('auth.fillAllFields'));
             return;
         }
 
         if (password !== confirmPassword) {
-            setError('Passwords do not match');
+            setError(t('auth.passwordsDoNotMatch'));
             return;
         }
 
         const passwordValidation = validatePassword(password);
         if (!passwordValidation.isValid) {
-            setError(passwordValidation.error || 'Invalid password');
+            setError(passwordValidation.error || t('auth.invalidPassword'));
             return;
         }
 
         if (!agreedToTerms) {
-            setError('Please agree to the terms and conditions');
+            setError(t('auth.agreeTerms'));
             return;
         }
 
@@ -124,7 +126,7 @@ const SignUp = ({ navigation }: any) => {
             setPhone('');
             setError('');
         } else {
-            const errorMsg = result.error || 'Failed to create account. Please try again.';
+            const errorMsg = result.error || t('auth.verifiedFailedSignIn');
             
             // Check for email already use error
             const errorMsgLower = errorMsg.toLowerCase();
@@ -133,7 +135,7 @@ const SignUp = ({ navigation }: any) => {
                  errorMsgLower.includes('duplicate') ||
                  errorMsgLower.includes('use') ||
                  errorMsgLower.includes('registered'))) {
-                toast.error('Email already in use. Please use a different email.');
+                toast.error(t('auth.emailInUse'));
                 setError('');
             } else {
                 setError(errorMsg);
@@ -156,9 +158,9 @@ const SignUp = ({ navigation }: any) => {
                         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                             <Feather name="arrow-left" size={24} color={colors.text} />
                         </TouchableOpacity>
-                        <Text style={[styles.title, { color: colors.text }]}>Create Account</Text>
+                        <Text style={[styles.title, { color: colors.text }]}>{t('auth.createAccount')}</Text>
                         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-                            Sign up to get started
+                            {t('auth.signUpToGetStarted')}
                         </Text>
                     </View>
 
@@ -166,12 +168,12 @@ const SignUp = ({ navigation }: any) => {
                     <View style={styles.form}>
                         {/* Name Input */}
                         <View style={styles.inputContainer}>
-                            <Text style={[styles.label, { color: colors.textSecondary }]}>Full Name</Text>
+                            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('auth.name')}</Text>
                             <View style={[styles.inputWrapper, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
                                 <Feather name="user" size={20} color={colors.textSecondary} />
                                 <TextInput
                                     style={[styles.input, { color: colors.text }]}
-                                    placeholder="Enter your full name"
+                                    placeholder={t('auth.namePlaceholder')}
                                     placeholderTextColor={colors.placeholder}
                                     value={name}
                                     onChangeText={setName}
@@ -182,12 +184,12 @@ const SignUp = ({ navigation }: any) => {
 
                         {/* Email Input */}
                         <View style={styles.inputContainer}>
-                            <Text style={[styles.label, { color: colors.textSecondary }]}>Email</Text>
+                            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('auth.email')}</Text>
                             <View style={[styles.inputWrapper, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
                                 <Feather name="mail" size={20} color={colors.textSecondary} />
                                 <TextInput
                                     style={[styles.input, { color: colors.text }]}
-                                    placeholder="Enter your email"
+                                    placeholder={t('auth.emailPlaceholder')}
                                     placeholderTextColor={colors.placeholder}
                                     value={email}
                                     onChangeText={setEmail}
@@ -200,12 +202,12 @@ const SignUp = ({ navigation }: any) => {
 
                         {/* Phone Input */}
                         <View style={styles.inputContainer}>
-                            <Text style={[styles.label, { color: colors.textSecondary }]}>Phone Number</Text>
+                            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('auth.phone')}</Text>
                             <View style={[styles.inputWrapper, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
                                 <Feather name="phone" size={20} color={colors.textSecondary} />
                                 <TextInput
                                     style={[styles.input, { color: colors.text }]}
-                                    placeholder="Enter your phone number"
+                                    placeholder={t('auth.phonePlaceholder')}
                                     placeholderTextColor={colors.placeholder}
                                     value={phone}
                                     onChangeText={setPhone}
@@ -217,12 +219,12 @@ const SignUp = ({ navigation }: any) => {
 
                         {/* Password Input */}
                         <View style={styles.inputContainer}>
-                            <Text style={[styles.label, { color: colors.textSecondary }]}>Password</Text>
+                            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('auth.password')}</Text>
                             <View style={[styles.inputWrapper, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
                                 <Feather name="lock" size={20} color={colors.textSecondary} />
                                 <TextInput
                                     style={[styles.input, { color: colors.text }]}
-                                    placeholder="Create a password"
+                                    placeholder={t('auth.createPassword')}
                                     placeholderTextColor={colors.placeholder}
                                     value={password}
                                     onChangeText={(text) => {
@@ -244,31 +246,31 @@ const SignUp = ({ navigation }: any) => {
                             {password.length > 0 && (
                                 <View style={styles.requirementsContainer}>
                                     <Text style={[styles.requirementsTitle, { color: colors.textSecondary }]}>
-                                        Password must contain:
+                                        {t('auth.passwordMustContain')}
                                     </Text>
                                     <RequirementItem
                                         met={passwordRequirements.length}
-                                        text="At least 6 characters"
+                                        text={t('auth.reqLength')}
                                         colors={colors}
                                     />
                                     <RequirementItem
                                         met={passwordRequirements.uppercase}
-                                        text="One uppercase letter (A-Z)"
+                                        text={t('auth.reqUppercase')}
                                         colors={colors}
                                     />
                                     <RequirementItem
                                         met={passwordRequirements.lowercase}
-                                        text="One lowercase letter (a-z)"
+                                        text={t('auth.reqLowercase')}
                                         colors={colors}
                                     />
                                     <RequirementItem
                                         met={passwordRequirements.number}
-                                        text="One number (0-9)"
+                                        text={t('auth.reqNumber')}
                                         colors={colors}
                                     />
                                     <RequirementItem
                                         met={passwordRequirements.special}
-                                        text="One special character (!@#$%...)"
+                                        text={t('auth.reqSpecial')}
                                         colors={colors}
                                     />
                                 </View>
@@ -277,12 +279,12 @@ const SignUp = ({ navigation }: any) => {
 
                         {/* Confirm Password Input */}
                         <View style={styles.inputContainer}>
-                            <Text style={[styles.label, { color: colors.textSecondary }]}>Confirm Password</Text>
+                            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('auth.confirmPassword')}</Text>
                             <View style={[styles.inputWrapper, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
                                 <Feather name="lock" size={20} color={colors.textSecondary} />
                                 <TextInput
                                     style={[styles.input, { color: colors.text }]}
-                                    placeholder="Confirm your password"
+                                    placeholder={t('auth.confirmPasswordPlaceholder')}
                                     placeholderTextColor={colors.placeholder}
                                     value={confirmPassword}
                                     onChangeText={setConfirmPassword}
@@ -314,8 +316,8 @@ const SignUp = ({ navigation }: any) => {
                                 {agreedToTerms && <Feather name="check" size={16} color={theme === 'dark' ? '#000' : '#fff'} />}
                             </View>
                             <Text style={[styles.termsText, { color: colors.textSecondary }]}>
-                                I agree to the{' '}
-                                <Text style={{ color: colors.primary, fontWeight: '600' }}>Terms & Conditions</Text>
+                                {t('auth.iAgreeTo')}{' '}
+                                <Text style={{ color: colors.primary, fontWeight: '600' }}>{t('auth.termsAndConditions')}</Text>
                             </Text>
                         </TouchableOpacity>
 
@@ -341,7 +343,7 @@ const SignUp = ({ navigation }: any) => {
                                     <ActivityIndicator color={theme === 'dark' ? '#000' : '#fff'} />
                                 ) : (
                                     <Text style={[styles.signUpButtonText, { color: theme === 'dark' ? '#000' : '#fff' }]}>
-                                        Sign Up
+                                        {t('auth.signUp')}
                                     </Text>
                                 )}
                             </LinearGradient>
@@ -350,10 +352,10 @@ const SignUp = ({ navigation }: any) => {
                         {/* Sign In Link */}
                         <View style={styles.signInContainer}>
                             <Text style={[styles.signInText, { color: colors.textSecondary }]}>
-                                Already have an account?{' '}
+                                {t('auth.hasAccount')}{' '}
                             </Text>
                             <TouchableOpacity onPress={() => navigation.navigate('SignIn')}>
-                                <Text style={[styles.signInLink, { color: colors.primary }]}>Sign In</Text>
+                                <Text style={[styles.signInLink, { color: colors.primary }]}>{t('auth.signIn')}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -382,12 +384,12 @@ const SignUp = ({ navigation }: any) => {
                             console.log('[SignUp] Verification and auto-login successful');
                             setPendingPassword('');
                         } else {
-                            setError('Account verified but failed to sign in. Please sign in manually.');
+                            setError(t('auth.verifiedFailedSignInManual'));
                             setPendingPassword(''); 
                         }
                     } catch (error: any) {
                         setIsLoading(false);
-                        setError('Account verified but failed to sign in. Please sign in manually.');
+                        setError(t('auth.verifiedFailedSignInManual'));
                         setPendingPassword(''); 
                     }
                     

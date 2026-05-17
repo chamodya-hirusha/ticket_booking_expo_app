@@ -18,11 +18,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../context/ThemeContext';
 import { apiService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const Support = () => {
    const navigation = useNavigation();
    const { colors, theme } = useTheme();
    const { user } = useAuth();
+   const { t } = useLanguage();
    
    const [name, setName] = useState(user?.name || '');
    const [email, setEmail] = useState(user?.email || '');
@@ -30,43 +32,43 @@ const Support = () => {
    const [message, setMessage] = useState('');
    const [isSubmitting, setIsSubmitting] = useState(false);
    
-   // Validation
-   const validateForm = () => {
-      if (!name.trim()) {
-         Alert.alert('Validation Error', 'Please enter your name.');
-         return false;
-      }
-      if (name.trim().length < 2) {
-         Alert.alert('Validation Error', 'Name must be at least 2 characters.');
-         return false;
-      }
-      if (!email.trim()) {
-         Alert.alert('Validation Error', 'Please enter your email.');
-         return false;
-      }
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email.trim())) {
-         Alert.alert('Validation Error', 'Please enter a valid email address.');
-         return false;
-      }
-      if (!subject.trim()) {
-         Alert.alert('Validation Error', 'Please enter a subject.');
-         return false;
-      }
-      if (subject.trim().length < 3) {
-         Alert.alert('Validation Error', 'Subject must be at least 3 characters.');
-         return false;
-      }
-      if (!message.trim()) {
-         Alert.alert('Validation Error', 'Please enter your message.');
-         return false;
-      }
-      if (message.trim().length < 10) {
-         Alert.alert('Validation Error', 'Message must be at least 10 characters.');
-         return false;
-      }
-      return true;
-   };
+    // Validation
+    const validateForm = () => {
+       if (!name.trim()) {
+          Alert.alert(t('support.validationError'), t('support.enterName'));
+          return false;
+       }
+       if (name.trim().length < 2) {
+          Alert.alert(t('support.validationError'), t('support.nameMinLength'));
+          return false;
+       }
+       if (!email.trim()) {
+          Alert.alert(t('support.validationError'), t('support.enterEmail'));
+          return false;
+       }
+       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+       if (!emailRegex.test(email.trim())) {
+          Alert.alert(t('support.validationError'), t('support.invalidEmail'));
+          return false;
+       }
+       if (!subject.trim()) {
+          Alert.alert(t('support.validationError'), t('support.enterSubject'));
+          return false;
+       }
+       if (subject.trim().length < 3) {
+          Alert.alert(t('support.validationError'), t('support.subjectMinLength'));
+          return false;
+       }
+       if (!message.trim()) {
+          Alert.alert(t('support.validationError'), t('support.enterMessage'));
+          return false;
+       }
+       if (message.trim().length < 10) {
+          Alert.alert(t('support.validationError'), t('support.messageMinLength'));
+          return false;
+       }
+       return true;
+    };
    
    // Handle form submission
    const handleSubmit = async () => {
@@ -86,8 +88,8 @@ const Support = () => {
          
          if (response.success) {
             Alert.alert(
-               'Message Sent',
-               response.message || 'Thank you for contacting us. We will get back to you shortly.',
+               t('support.messageSent'),
+               response.message || t('support.contactSuccess'),
                [
                   {
                      text: 'OK',
@@ -103,14 +105,14 @@ const Support = () => {
             );
          } else {
             Alert.alert(
-               'Error',
-               response.error || response.message || 'Failed to send message. Please try again.'
+               t('common.error'),
+               response.error || response.message || t('support.sendError')
             );
          }
       } catch (error: any) {
          Alert.alert(
-            'Error',
-            error?.message || 'An error occurred while sending your message. Please try again.'
+            t('common.error'),
+            error?.message || t('support.networkError')
          );
       } finally {
          setIsSubmitting(false);
@@ -127,7 +129,7 @@ const Support = () => {
             >
                <Feather name="arrow-left" size={24} color={colors.text} />
             </TouchableOpacity>
-            <Text style={[styles.headerTitle, { color: colors.text }]}>Support</Text>
+            <Text style={[styles.headerTitle, { color: colors.text }]}>{t('support.title')}</Text>
             <View style={styles.placeholder} />
          </View>
 
@@ -144,9 +146,9 @@ const Support = () => {
             >
                {/* Hero Section */}
                <View style={styles.heroSection}>
-                  <Text style={[styles.heroTitle, { color: colors.text }]}>How can we help?</Text>
+                  <Text style={[styles.heroTitle, { color: colors.text }]}>{t('support.heroTitle')}</Text>
                   <Text style={[styles.heroSubtitle, { color: colors.textSecondary }]}>
-                     We're here to help you with any questions or issues you might have.
+                     {t('support.heroSubtitle')}
                   </Text>
                </View>
 
@@ -154,45 +156,33 @@ const Support = () => {
                <View style={styles.gridContainer}>
                   <ContactCard
                      icon="mail"
-                     title="Email Us"
-                     subtitle="Get a response within 24h"
+                     title={t('support.emailUs')}
+                     subtitle="support@ticketapp.com"
+                     infoText={t('support.emailSubtitle')}
                      onPress={() => Linking.openURL('mailto:support@ticketapp.com')}
                      colors={colors}
                   />
                   <ContactCard
                      icon="phone"
-                     title="Call Us"
-                     subtitle="Mon-Fri from 9am to 5pm"
+                     title={t('support.callUs')}
+                     subtitle="+1 (234) 567-890"
+                     infoText={t('support.callSubtitle')}
                      onPress={() => Linking.openURL('tel:+1234567890')}
                      colors={colors}
                   />
                </View>
 
-               {/* FAQ Link */}
-               <TouchableOpacity
-                  style={[styles.faqCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
-               >
-                  <View style={[styles.iconCircle, { backgroundColor: colors.inputBackground }]}>
-                     <Feather name="help-circle" size={24} color={colors.primary} />
-                  </View>
-                  <View style={styles.faqContent}>
-                     <Text style={[styles.faqTitle, { color: colors.text }]}>Frequently Asked Questions</Text>
-                     <Text style={[styles.faqSubtitle, { color: colors.textSecondary }]}>Find answers to common questions</Text>
-                  </View>
-                  <Feather name="chevron-right" size={24} color={colors.textSecondary} />
-               </TouchableOpacity>
-
                {/* Message Form */}
                <View style={[styles.formSection, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                  <Text style={[styles.sectionTitle, { color: colors.text }]}>Send a Message</Text>
+                  <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('support.sendMessage')}</Text>
 
                   <View style={styles.inputContainer}>
-                     <Text style={[styles.label, { color: colors.textSecondary }]}>Name</Text>
+                     <Text style={[styles.label, { color: colors.textSecondary }]}>{t('editProfile.fullName')}</Text>
                      <View style={[styles.inputWrapper, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
                         <Feather name="user" size={20} color={colors.textSecondary} />
                         <TextInput
                            style={[styles.input, { color: colors.text }]}
-                           placeholder="Your name"
+                           placeholder={t('support.namePlaceholder')}
                            placeholderTextColor={colors.placeholder}
                            value={name}
                            onChangeText={setName}
@@ -202,12 +192,12 @@ const Support = () => {
                   </View>
 
                   <View style={styles.inputContainer}>
-                     <Text style={[styles.label, { color: colors.textSecondary }]}>Email</Text>
+                     <Text style={[styles.label, { color: colors.textSecondary }]}>{t('editProfile.email')}</Text>
                      <View style={[styles.inputWrapper, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
                         <Feather name="mail" size={20} color={colors.textSecondary} />
                         <TextInput
                            style={[styles.input, { color: colors.text }]}
-                           placeholder="Your email"
+                           placeholder={t('support.emailPlaceholder')}
                            placeholderTextColor={colors.placeholder}
                            keyboardType="email-address"
                            autoCapitalize="none"
@@ -219,12 +209,12 @@ const Support = () => {
                   </View>
 
                   <View style={styles.inputContainer}>
-                     <Text style={[styles.label, { color: colors.textSecondary }]}>Subject</Text>
+                     <Text style={[styles.label, { color: colors.textSecondary }]}>{t('support.subjectLabel')}</Text>
                      <View style={[styles.inputWrapper, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
                         <Feather name="file-text" size={20} color={colors.textSecondary} />
                         <TextInput
                            style={[styles.input, { color: colors.text }]}
-                           placeholder="Message subject"
+                           placeholder={t('support.subjectPlaceholder')}
                            placeholderTextColor={colors.placeholder}
                            value={subject}
                            onChangeText={setSubject}
@@ -234,11 +224,11 @@ const Support = () => {
                   </View>
 
                   <View style={styles.inputContainer}>
-                     <Text style={[styles.label, { color: colors.textSecondary }]}>Message</Text>
+                     <Text style={[styles.label, { color: colors.textSecondary }]}>{t('support.messageLabel')}</Text>
                      <View style={[styles.textAreaWrapper, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
                         <TextInput
                            style={[styles.textArea, { color: colors.text }]}
-                           placeholder="Describe your issue..."
+                           placeholder={t('support.messagePlaceholder')}
                            placeholderTextColor={colors.placeholder}
                            multiline
                            numberOfLines={2}
@@ -265,7 +255,7 @@ const Support = () => {
                         <ActivityIndicator size="small" color={theme === 'dark' ? '#000' : '#fff'} />
                      ) : (
                         <>
-                           <Text style={[styles.submitButtonText, { color: theme === 'dark' ? '#000' : '#fff' }]}>Send Message</Text>
+                           <Text style={[styles.submitButtonText, { color: theme === 'dark' ? '#000' : '#fff' }]}>{t('support.sendButton')}</Text>
                            <Feather name="send" size={18} color={theme === 'dark' ? '#000' : '#fff'} />
                         </>
                      )}
@@ -277,7 +267,7 @@ const Support = () => {
    );
 };
 
-const ContactCard = ({ icon, title, subtitle, onPress, colors }: any) => (
+const ContactCard = ({ icon, title, subtitle, infoText, onPress, colors }: any) => (
    <TouchableOpacity
       style={[styles.contactCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
       onPress={onPress}
@@ -286,7 +276,13 @@ const ContactCard = ({ icon, title, subtitle, onPress, colors }: any) => (
          <Feather name={icon} size={24} color={colors.primary} />
       </View>
       <Text style={[styles.cardTitle, { color: colors.text }]}>{title}</Text>
-      <Text style={[styles.cardSubtitle, { color: colors.textSecondary }]}>{subtitle}</Text>
+      <Text style={[styles.cardSubtitle, { color: colors.text }]}>{subtitle}</Text>
+      {infoText && (
+         <View style={[styles.infoRow, { backgroundColor: colors.inputBackground }]}>
+            <Feather name={icon === 'mail' ? 'clock' : 'calendar'} size={12} color={colors.primary} />
+            <Text style={[styles.infoText, { color: colors.textSecondary }]}>{infoText}</Text>
+         </View>
+      )}
    </TouchableOpacity>
 );
 
@@ -419,24 +415,18 @@ const styles = StyleSheet.create({
       fontSize: 16,
       fontWeight: 'bold',
    },
-   faqCard: {
+   infoRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      padding: 16,
-      borderRadius: 20,
-      borderWidth: 1,
-      gap: 16,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 8,
+      gap: 6,
+      marginTop: 4,
    },
-   faqContent: {
-      flex: 1,
-   },
-   faqTitle: {
-      fontSize: 16,
-      fontWeight: 'bold',
-      marginBottom: 4,
-   },
-   faqSubtitle: {
-      fontSize: 12,
+   infoText: {
+      fontSize: 10,
+      fontWeight: '600',
    },
 });
 

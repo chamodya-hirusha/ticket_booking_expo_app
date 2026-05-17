@@ -5,12 +5,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../context/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
+import { useLanguage } from '../context/LanguageContext';
 
 const { width } = Dimensions.get('window');
 
 const InvalidTicket = () => {
     const { colors, theme } = useTheme();
     const navigation = useNavigation();
+    const { t } = useLanguage();
 
     const handleClose = () => {
         navigation.goBack();
@@ -33,7 +35,7 @@ const InvalidTicket = () => {
                 <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
                     <Ionicons name="close" size={24} color={colors.text} />
                 </TouchableOpacity>
-                <Text style={[styles.headerTitle, { color: colors.text }]}>Scan Result</Text>
+                <Text style={[styles.headerTitle, { color: colors.text }]}>{t('invalidTicket.title')}</Text>
                 <View style={styles.placeholder} />
             </View>
 
@@ -48,9 +50,9 @@ const InvalidTicket = () => {
 
                 {/* Result Card */}
                 <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                    <Text style={[styles.title, { color: colors.text }]}>INVALID TICKET</Text>
+                    <Text style={[styles.title, { color: colors.text }]}>{t('invalidTicket.statusTitle')}</Text>
                     <Text style={[styles.description, { color: colors.textSecondary }]}>
-                        This ticket was not found in our system. Please try scanning again or contact support.
+                        {t('invalidTicket.description')}
                     </Text>
 
                     <TouchableOpacity onPress={handleScanAgain} activeOpacity={0.8}>
@@ -60,12 +62,12 @@ const InvalidTicket = () => {
                             end={{ x: 1, y: 0 }}
                             style={styles.scanButton}
                         >
-                            <Text style={styles.scanButtonText}>SCAN AGAIN</Text>
+                            <Text style={styles.scanButtonText}>{t('invalidTicket.scanAgain')}</Text>
                         </LinearGradient>
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={handleHelp} style={styles.helpButton}>
-                        <Text style={[styles.helpText, { color: colors.primary }]}>Need Help?</Text>
+                        <Text style={[styles.helpText, { color: colors.primary }]}>{t('invalidTicket.needHelp')}</Text>
                     </TouchableOpacity>
                 </View>
             </View>

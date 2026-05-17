@@ -21,6 +21,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { getEventImageUrl } from '../constants';
 import { apiService } from '../services/api';
 import { transformEvent, getEventPriceDisplay } from '../utils/event';
+import { useLanguage } from '../context/LanguageContext';
 
 const CATEGORY_ICONS: Record<string, string> = {
     'All': 'grid-outline',
@@ -84,6 +85,7 @@ const POPULAR_EVENTS = [];
 const Explore = () => {
     const { colors, theme } = useTheme();
     const navigation = useNavigation();
+    const { t } = useLanguage();
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [categories, setCategories] = useState<CategoryItem[]>([
         { id: 'all', name: 'All', value: null, icon: 'grid-outline' }
@@ -98,7 +100,7 @@ const Explore = () => {
 
     // Filter States
     const [priceRange, setPriceRange] = useState([0, 500]);
-    const [selectedDate, setSelectedDate] = useState('Anytime');
+    const [selectedDate, setSelectedDate] = useState('anytime');
 
     // Fetch Categories
     React.useEffect(() => {
@@ -191,7 +193,7 @@ const Explore = () => {
             }
         } catch (err) {
             console.error('Failed to fetch events:', err);
-            setError('Failed to load events');
+            setError(t('explore.loadFailed'));
         } finally {
             setLoading(false);
         }
@@ -224,7 +226,10 @@ const Explore = () => {
                     { color: selectedCategory === item.id ? '#000' : colors.textSecondary }
                 ]}
             >
-                {item.name}
+                {item.id === 'all' ? t('explore.all') : (() => {
+                    const trans = t(`home.category_${item.name.toLowerCase()}`);
+                    return trans.startsWith('home.category_') ? item.name : trans;
+                })()}
             </Text>
         </TouchableOpacity>
     );
@@ -272,7 +277,7 @@ const Explore = () => {
                 <View style={styles.popularFooter}>
                     <Text style={[styles.popularPrice, { color: colors.text }]}>{getEventPriceDisplay(item)}</Text>
                     <TouchableOpacity style={[styles.bookButton, { backgroundColor: 'rgba(0, 255, 255, 0.1)' }]}>
-                        <Text style={[styles.bookText, { color: colors.primary }]}>Book</Text>
+                        <Text style={[styles.bookText, { color: colors.primary }]}>{t('explore.book')}</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -286,8 +291,8 @@ const Explore = () => {
                 {/* Header */}
                 <View style={styles.header}>
                     <View>
-                        <Text style={[styles.headerTitle, { color: colors.text }]}>Explore</Text>
-                        <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>Discover events near you</Text>
+                        <Text style={[styles.headerTitle, { color: colors.text }]}>{t('explore.title')}</Text>
+                        <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>{t('explore.subtitle')}</Text>
                     </View>
                     <TouchableOpacity style={[styles.iconButton, { backgroundColor: colors.surface }]}>
                         <Ionicons name="notifications-outline" size={24} color={colors.text} />
@@ -300,7 +305,7 @@ const Explore = () => {
                     <View style={[styles.searchBar, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
                         <Ionicons name="search" size={20} color={colors.textSecondary} />
                         <TextInput
-                            placeholder="Search events, artists..."
+                            placeholder={t('explore.searchPlaceholder')}
                             placeholderTextColor={colors.textSecondary}
                             style={[styles.searchInput, { color: colors.text }]}
                             value={searchQuery}
@@ -334,9 +339,9 @@ const Explore = () => {
                 {/* Featured Section */}
                 <View style={styles.section}>
                     <View style={styles.sectionHeader}>
-                        <Text style={[styles.sectionTitle, { color: colors.text }]}>Featured Events</Text>
+                        <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('explore.featuredEvents')}</Text>
                         <TouchableOpacity>
-                            <Text style={[styles.seeAll, { color: colors.primary }]}>See All</Text>
+                            <Text style={[styles.seeAll, { color: colors.primary }]}>{t('explore.seeAll')}</Text>
                         </TouchableOpacity>
                     </View>
                     <FlatList
@@ -354,9 +359,9 @@ const Explore = () => {
                 {/* Popular Section */}
                 <View style={styles.section}>
                     <View style={styles.sectionHeader}>
-                        <Text style={[styles.sectionTitle, { color: colors.text }]}>Popular Nearby</Text>
+                        <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('explore.popularNearby')}</Text>
                         <TouchableOpacity>
-                            <Text style={[styles.seeAll, { color: colors.primary }]}>See All</Text>
+                            <Text style={[styles.seeAll, { color: colors.primary }]}>{t('explore.seeAll')}</Text>
                         </TouchableOpacity>
                     </View>
                     <View style={styles.popularList}>
@@ -380,7 +385,7 @@ const Explore = () => {
                 <View style={styles.modalContainer}>
                     <View style={[styles.modalContent, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                         <View style={styles.modalHeader}>
-                            <Text style={[styles.modalTitle, { color: colors.text }]}>Filter Events</Text>
+                            <Text style={[styles.modalTitle, { color: colors.text }]}>{t('explore.filterEvents')}</Text>
                             <TouchableOpacity onPress={() => setIsFilterVisible(false)}>
                                 <Ionicons name="close" size={24} color={colors.text} />
                             </TouchableOpacity>
@@ -388,9 +393,9 @@ const Explore = () => {
 
                         <ScrollView style={styles.modalBody}>
                             {/* Date Filter */}
-                            <Text style={[styles.filterLabel, { color: colors.textSecondary }]}>Date</Text>
+                            <Text style={[styles.filterLabel, { color: colors.textSecondary }]}>{t('explore.date')}</Text>
                             <View style={styles.filterOptions}>
-                                {['Anytime', 'Today', 'Tomorrow', 'This Week'].map((option) => (
+                                {['anytime', 'today', 'tomorrow', 'thisWeek'].map((option) => (
                                     <TouchableOpacity
                                         key={option}
                                         style={[
@@ -402,23 +407,23 @@ const Explore = () => {
                                         ]}
                                         onPress={() => setSelectedDate(option)}
                                     >
-                                        <Text style={{ color: selectedDate === option ? '#000' : colors.text }}>{option}</Text>
+                                        <Text style={{ color: selectedDate === option ? '#000' : colors.text }}>{t('explore.' + option)}</Text>
                                     </TouchableOpacity>
                                 ))}
                             </View>
 
                             {/* Price Range */}
-                            <Text style={[styles.filterLabel, { color: colors.textSecondary, marginTop: 20 }]}>Price Range</Text>
+                            <Text style={[styles.filterLabel, { color: colors.textSecondary, marginTop: 20 }]}>{t('explore.priceRange')}</Text>
                             <View style={[styles.priceInputContainer, { backgroundColor: colors.inputBackground }]}>
                                 <Text style={{ color: colors.text }}>$0 - $500+</Text>
                             </View>
 
                             {/* Location */}
-                            <Text style={[styles.filterLabel, { color: colors.textSecondary, marginTop: 20 }]}>Location</Text>
+                            <Text style={[styles.filterLabel, { color: colors.textSecondary, marginTop: 20 }]}>{t('explore.location')}</Text>
                             <View style={[styles.locationInput, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
                                 <Ionicons name="location-outline" size={20} color={colors.textSecondary} />
                                 <TextInput
-                                    placeholder="Enter city or district"
+                                    placeholder={t('explore.locationPlaceholder')}
                                     placeholderTextColor={colors.textSecondary}
                                     style={{ flex: 1, marginLeft: 10, color: colors.text }}
                                 />
@@ -433,13 +438,13 @@ const Explore = () => {
                                     // Reset other filters
                                 }}
                             >
-                                <Text style={{ color: colors.text }}>Reset</Text>
+                                <Text style={{ color: colors.text }}>{t('explore.reset')}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={[styles.applyButton, { backgroundColor: colors.primary }]}
                                 onPress={() => setIsFilterVisible(false)}
                             >
-                                <Text style={{ color: '#000', fontWeight: 'bold' }}>Apply Filters</Text>
+                                <Text style={{ color: '#000', fontWeight: 'bold' }}>{t('explore.applyFilters')}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>

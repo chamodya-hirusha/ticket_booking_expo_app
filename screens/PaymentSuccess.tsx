@@ -17,6 +17,7 @@ import { Reservation, StripePaymentResponse } from '../services/api/types';
 import { notificationService } from '../services/notifications';
 import { formatPrice } from '../utils/event';
 import { apiService } from '../services/api';
+import { useLanguage } from '../context/LanguageContext';
 
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -168,6 +169,7 @@ const PaymentSuccess = () => {
    const navigation = useNavigation();
    const route = useRoute<PaymentSuccessRouteProp>();
    const { colors, theme } = useTheme();
+   const { t } = useLanguage();
    const [fireworks, setFireworks] = useState<Array<{ id: number; x: number; y: number; colors: string[] }>>([]);
    const completedFireworks = useRef(0);
    const hasAnimated = useRef(false);
@@ -200,7 +202,7 @@ const PaymentSuccess = () => {
             const intentId = payment.intentId || payment.id;
 
             if (!intentId) {
-               Alert.alert('Error', 'No intentId found in payment object');
+               Alert.alert(t('common.error') || 'Error', 'No intentId found in payment object');
                return;
             }
 
@@ -392,12 +394,12 @@ const PaymentSuccess = () => {
             </Animated.View>
 
             <Animated.View style={{ opacity: titleOpacity, transform: [{ scale: titleScale }] }}>
-               <Text style={[styles.title, { color: colors.primary, textShadowColor: colors.primary }]}>Payment Successful!</Text>
+               <Text style={[styles.title, { color: colors.primary, textShadowColor: colors.primary }]}>{t('paymentSuccess.title')}</Text>
             </Animated.View>
 
             <Animated.View style={{ opacity: successTextOpacity }}>
                <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-                  Your ticket has been booked. You're all set for an unforgettable night.
+                  {t('paymentSuccess.subtitle')}
                </Text>
             </Animated.View>
 
@@ -406,7 +408,7 @@ const PaymentSuccess = () => {
                <View style={[styles.statusBadge, { backgroundColor: 'rgba(76, 175, 80, 0.1)', borderColor: '#4CAF50' }]}>
                   <MaterialIcons name="check-circle" size={16} color="#4CAF50" />
                   <Text style={[styles.statusText, { color: '#4CAF50' }]}>
-                     Ticket saved to your account ✓
+                     {t('paymentSuccess.ticketSaved')}
                   </Text>
                </View>
             )}
@@ -414,7 +416,7 @@ const PaymentSuccess = () => {
                <View style={[styles.statusBadge, { backgroundColor: 'rgba(255, 193, 7, 0.1)', borderColor: '#FFC107' }]}>
                   <MaterialIcons name="sync" size={16} color="#FFC107" />
                   <Text style={[styles.statusText, { color: '#FFC107' }]}>
-                     Saving ticket data... {retryCount > 0 ? `(Attempt ${retryCount + 1})` : ''}
+                     {t('paymentSuccess.savingTicket')} {retryCount > 0 ? `(Attempt ${retryCount + 1})` : ''}
                   </Text>
                </View>
             )}
@@ -422,7 +424,7 @@ const PaymentSuccess = () => {
                <View style={[styles.statusBadge, { backgroundColor: 'rgba(244, 67, 54, 0.1)', borderColor: '#F44336' }]}>
                   <MaterialIcons name="info" size={16} color="#F44336" />
                   <Text style={[styles.statusText, { color: '#F44336' }]}>
-                     Payment successful, but ticket data not confirmed. Contact support if ticket doesn't appear.
+                     {t('paymentSuccess.saveFailed')}
                   </Text>
                </View>
             )}
@@ -430,32 +432,32 @@ const PaymentSuccess = () => {
             {/* Summary Card */}
             <View style={[styles.summaryCard, { backgroundColor: colors.surface }]}>
                <Row
-                  label="Event"
+                  label={t('paymentSuccess.event')}
                   value={event?.name || (event as any)?.title || 'Event'}
                   color={colors.text}
                   labelColor={colors.textSecondary}
                />
                <Row
-                  label="Date"
+                  label={t('paymentSuccess.date')}
                   value={formatDate(event?.date)}
                   color={colors.text}
                   labelColor={colors.textSecondary}
                />
                <Row
-                  label="Venue"
+                  label={t('paymentSuccess.venue')}
                   value={event?.location || 'TBD'}
                   color={colors.text}
                   labelColor={colors.textSecondary}
                />
                <Row
-                  label="Tickets"
-                  value={`${ticketDetails.quantity} ${ticketDetails.type} Ticket${ticketDetails.quantity > 1 ? 's' : ''}`}
+                  label={t('paymentSuccess.ticketsLabel')}
+                  value={`${ticketDetails.quantity} ${ticketDetails.type} ${ticketDetails.quantity === 1 ? t('paymentSuccess.ticket') : t('paymentSuccess.tickets')}`}
                   color={colors.text}
                   labelColor={colors.textSecondary}
                />
                {reservation && (
                   <Row
-                     label="Reservation ID"
+                     label={t('paymentSuccess.reservationId')}
                      value={`#${reservation.id}`}
                      color={colors.text}
                      labelColor={colors.textSecondary}
@@ -463,7 +465,7 @@ const PaymentSuccess = () => {
                )}
                <View style={[styles.separator, { backgroundColor: colors.border }]} />
                <View style={styles.totalRow}>
-                  <Text style={[styles.totalLabel, { color: colors.textSecondary }]}>Total</Text>
+                  <Text style={[styles.totalLabel, { color: colors.textSecondary }]}>{t('paymentSuccess.total')}</Text>
                   <Text style={[styles.totalValue, { color: colors.text }]}>{formatPrice(total)}</Text>
                </View>
             </View>
@@ -473,11 +475,11 @@ const PaymentSuccess = () => {
                style={[styles.primaryButton, { backgroundColor: colors.primary, shadowColor: colors.primary }]}
                onPress={() => (navigation as any).navigate('MainTabs', { screen: 'Tickets' })}
             >
-               <Text style={[styles.primaryButtonText, { color: theme === 'dark' ? '#000' : '#fff' }]}>View My Ticket</Text>
+               <Text style={[styles.primaryButtonText, { color: theme === 'dark' ? '#000' : '#fff' }]}>{t('paymentSuccess.viewTicket')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={() => (navigation as any).navigate('MainTabs', { screen: 'HomeTab' })}>
-               <Text style={[styles.secondaryButtonText, { color: colors.textSecondary }]}>Back to Home</Text>
+               <Text style={[styles.secondaryButtonText, { color: colors.textSecondary }]}>{t('paymentSuccess.backToHome')}</Text>
             </TouchableOpacity>
          </View>
       </SafeAreaView>

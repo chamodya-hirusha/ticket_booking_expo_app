@@ -95,7 +95,7 @@ const HomeScreen = () => {
   const [maxPrice, setMaxPrice] = useState(500);
   const [events, setEvents] = useState<Event[]>([]);
   const [categories, setCategories] = useState<CategoryItem[]>([
-    { id: 'all', name: t('common.seeAll'), value: null, icon: 'grid-outline' }
+    { id: 'all', name: t('explore.all'), value: null, icon: 'grid-outline' }
   ]);
   const [loading, setLoading] = useState(true);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
@@ -264,7 +264,7 @@ const HomeScreen = () => {
           });
 
         setCategories([
-          { id: 'all', name: t('common.seeAll'), value: null, icon: 'grid-outline' },
+          { id: 'all', name: t('explore.all'), value: null, icon: 'grid-outline' },
           ...dynamicCategories
         ]);
       }
@@ -593,7 +593,7 @@ const HomeScreen = () => {
               <Feather name="bell" size={20} color={colors.text} />
               <View style={[styles.notificationBadge, { backgroundColor: colors.notification }]} />
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.iconButton, { backgroundColor: colors.surface }]} onPress={() => (navigation as any).navigate('Profile')}>
+            <TouchableOpacity style={[styles.iconButton, { backgroundColor: colors.surface }]} onPress={() => (navigation as any).navigate('ProfileTab')}>
               <Image
                 source={{ uri: user?.avatar || 'https://api.dicebear.com/7.x/notionists/png?seed=User&backgroundColor=3b82f6' }}
                 style={styles.avatar}
@@ -670,7 +670,10 @@ const HomeScreen = () => {
                       { color: selectedCategory === item.id ? (theme === 'dark' ? '#000' : '#fff') : colors.textSecondary }
                     ]}
                   >
-                    {item.name}
+                    {item.id === 'all' ? t('explore.all') : (() => {
+                      const trans = t(`home.category_${item.name.toLowerCase()}`);
+                      return trans.startsWith('home.category_') ? item.name : trans;
+                    })()}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -800,7 +803,7 @@ const HomeScreen = () => {
               </View>
 
               {/* Category */}
-              <Text style={[styles.filterLabel, { color: colors.textSecondary, marginTop: 20 }]}>Category</Text>
+              <Text style={[styles.filterLabel, { color: colors.textSecondary, marginTop: 20 }]}>{t('home.category')}</Text>
               <View style={styles.filterOptions}>
                 {categories.map((cat) => (
                   <TouchableOpacity
@@ -817,18 +820,21 @@ const HomeScreen = () => {
                     <Text style={{
                       color: (searchCategory === cat.value || (searchCategory === null && cat.value === null)) ? (theme === 'dark' ? '#000' : '#fff') : colors.text
                     }}>
-                      {cat.name}
+                      {cat.id === 'all' ? t('explore.all') : (() => {
+                        const trans = t(`home.category_${cat.name.toLowerCase()}`);
+                        return trans.startsWith('home.category_') ? cat.name : trans;
+                      })()}
                     </Text>
                   </TouchableOpacity>
                 ))}
               </View>
 
               {/* Location */}
-              <Text style={[styles.filterLabel, { color: colors.textSecondary, marginTop: 20 }]}>Location</Text>
+              <Text style={[styles.filterLabel, { color: colors.textSecondary, marginTop: 20 }]}>{t('home.location')}</Text>
               <View style={[styles.locationInput, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
                 <Ionicons name="location-outline" size={20} color={colors.textSecondary} />
                 <TextInput
-                  placeholder="Enter city or district"
+                  placeholder={t('explore.locationPlaceholder') || 'Enter city or district'}
                   placeholderTextColor={colors.textSecondary}
                   style={{ flex: 1, marginLeft: 10, color: colors.text }}
                   value={searchLocation}
@@ -837,7 +843,7 @@ const HomeScreen = () => {
               </View>
 
               {/* Date Range */}
-              <Text style={[styles.filterLabel, { color: colors.textSecondary, marginTop: 20 }]}>Date Range</Text>
+              <Text style={[styles.filterLabel, { color: colors.textSecondary, marginTop: 20 }]}>{t('home.date')}</Text>
               <View style={styles.dateRangeContainer}>
                 <View style={[styles.dateInputWrapper, { backgroundColor: colors.inputBackground, borderColor: colors.border, flex: 1, marginRight: 8 }]}>
                   <TouchableOpacity
@@ -851,7 +857,7 @@ const HomeScreen = () => {
                     <Ionicons name="calendar-outline" size={18} color={colors.primary} style={{ marginRight: 8 }} />
                   </TouchableOpacity>
                   <TextInput
-                    placeholder="Start (YYYY-MM-DD)"
+                    placeholder={`${t('home.startDate')} (YYYY-MM-DD)`}
                     placeholderTextColor={colors.textSecondary}
                     style={{ flex: 1, color: colors.text }}
                     value={startDate}
@@ -871,7 +877,7 @@ const HomeScreen = () => {
                     <Ionicons name="calendar-outline" size={18} color={colors.primary} style={{ marginRight: 8 }} />
                   </TouchableOpacity>
                   <TextInput
-                    placeholder="End (YYYY-MM-DD)"
+                    placeholder={`${t('home.endDate')} (YYYY-MM-DD)`}
                     placeholderTextColor={colors.textSecondary}
                     style={{ flex: 1, color: colors.text }}
                     value={endDate}
@@ -882,7 +888,7 @@ const HomeScreen = () => {
               </View>
 
               {/* Sort Options */}
-              <Text style={[styles.filterLabel, { color: colors.textSecondary, marginTop: 20 }]}>Sort By</Text>
+              <Text style={[styles.filterLabel, { color: colors.textSecondary, marginTop: 20 }]}>{t('home.sortBy')}</Text>
               <View style={styles.filterOptions}>
                 {['date', 'name', 'location'].map((option) => (
                   <TouchableOpacity
@@ -899,14 +905,14 @@ const HomeScreen = () => {
                     <Text style={{
                       color: sortBy === option ? (theme === 'dark' ? '#000' : '#fff') : colors.text
                     }}>
-                      {option.charAt(0).toUpperCase() + option.slice(1)}
+                      {option === 'date' ? t('home.date') : option === 'location' ? t('home.location') : t('editProfile.fullName')}
                     </Text>
                   </TouchableOpacity>
                 ))}
               </View>
 
               {/* Sort Direction */}
-              <Text style={[styles.filterLabel, { color: colors.textSecondary, marginTop: 20 }]}>Sort Direction</Text>
+              <Text style={[styles.filterLabel, { color: colors.textSecondary, marginTop: 20 }]}>{t('home.sortBy')} (Direction)</Text>
               <View style={styles.filterOptions}>
                 {(['ASC', 'DESC'] as const).map((direction) => (
                   <TouchableOpacity
@@ -923,7 +929,7 @@ const HomeScreen = () => {
                     <Text style={{
                       color: sortDirection === direction ? (theme === 'dark' ? '#000' : '#fff') : colors.text
                     }}>
-                      {direction}
+                      {direction === 'ASC' ? t('home.ascending') : t('home.descending')}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -943,7 +949,7 @@ const HomeScreen = () => {
                   setSortDirection('DESC');
                 }}
               >
-                <Text style={{ color: colors.text }}>Reset</Text>
+                <Text style={{ color: colors.text }}>{t('common.reset')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.applyButton, { backgroundColor: colors.primary }]}
@@ -1000,17 +1006,17 @@ const HomeScreen = () => {
 
                       setEvents(transformedEvents);
                     } else {
-                      setError(response.error || 'Failed to search events');
+                      setError(response.error || t('explore.loadFailed'));
                     }
                   } catch (err: any) {
-                    const errorMessage = err?.message || 'An error occurred while searching events';
+                    const errorMessage = err?.message || t('confirmPay.unexpectedError');
                     setError(errorMessage);
                   } finally {
                     setLoading(false);
                   }
                 }}
               >
-                <Text style={{ color: theme === 'dark' ? '#000' : '#fff', fontWeight: 'bold' }}>Search</Text>
+                <Text style={{ color: theme === 'dark' ? '#000' : '#fff', fontWeight: 'bold' }}>{t('common.search')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -1034,7 +1040,9 @@ const HomeScreen = () => {
           ]}>
             <View style={styles.datePickerHeader}>
               <Text style={[styles.datePickerTitle, { color: colors.text }]}>
-                Select {selectedDateType === 'start' ? 'Start' : 'End'} Date
+                {selectedDateType === 'start'
+                  ? (t('home.startDate') === 'Startdatum' ? 'Startdatum uswählen' : t('home.startDate') === 'Date de début' ? 'Sélectionner la date de début' : t('home.startDate') === 'Data inizio' ? 'Seleziona Data Inizio' : 'Select Start Date')
+                  : (t('home.endDate') === 'Enddatum' ? 'Enddatum uswählen' : t('home.endDate') === 'Date de fin' ? 'Sélectionner la date de fin' : t('home.endDate') === 'Data fine' ? 'Seleziona Data Fine' : 'Select End Date')}
               </Text>
               <TouchableOpacity onPress={() => setIsDatePickerVisible(false)}>
                 <Ionicons name="close" size={24} color={colors.text} />
@@ -1045,7 +1053,7 @@ const HomeScreen = () => {
               {/* Simple Date Input Fields */}
               <View style={styles.datePickerInputs}>
                 <View style={styles.datePickerInputGroup}>
-                  <Text style={[styles.datePickerLabel, { color: colors.textSecondary }]}>Year</Text>
+                  <Text style={[styles.datePickerLabel, { color: colors.textSecondary }]}>{t('home.year')}</Text>
                   <TextInput
                     style={[styles.datePickerInput, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
                     value={tempSelectedDate.getFullYear().toString()}
@@ -1061,7 +1069,7 @@ const HomeScreen = () => {
                   />
                 </View>
                 <View style={styles.datePickerInputGroup}>
-                  <Text style={[styles.datePickerLabel, { color: colors.textSecondary }]}>Month</Text>
+                  <Text style={[styles.datePickerLabel, { color: colors.textSecondary }]}>{t('home.month')}</Text>
                   <TextInput
                     style={[styles.datePickerInput, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
                     value={(tempSelectedDate.getMonth() + 1).toString().padStart(2, '0')}
@@ -1078,7 +1086,7 @@ const HomeScreen = () => {
                   />
                 </View>
                 <View style={styles.datePickerInputGroup}>
-                  <Text style={[styles.datePickerLabel, { color: colors.textSecondary }]}>Day</Text>
+                  <Text style={[styles.datePickerLabel, { color: colors.textSecondary }]}>{t('home.day')}</Text>
                   <TextInput
                     style={[styles.datePickerInput, { backgroundColor: colors.inputBackground, borderColor: colors.border, color: colors.text }]}
                     value={tempSelectedDate.getDate().toString().padStart(2, '0')}
@@ -1098,13 +1106,13 @@ const HomeScreen = () => {
 
               {/* Quick Date Presets */}
               <View style={styles.datePresetsContainer}>
-                <Text style={[styles.datePickerLabel, { color: colors.textSecondary, marginBottom: 12 }]}>Quick Select</Text>
+                <Text style={[styles.datePickerLabel, { color: colors.textSecondary, marginBottom: 12 }]}>{t('home.quickSelect')}</Text>
                 <View style={styles.datePresetsRow}>
                   {[
-                    { label: 'Today', days: 0 },
-                    { label: 'Tomorrow', days: 1 },
-                    { label: 'Next Week', days: 7 },
-                    { label: 'Next Month', days: 30 },
+                    { label: t('home.presetToday'), days: 0 },
+                    { label: t('home.presetTomorrow'), days: 1 },
+                    { label: t('home.presetNextWeek'), days: 7 },
+                    { label: t('home.presetNextMonth'), days: 30 },
                   ].map((preset) => (
                     <TouchableOpacity
                       key={preset.label}
@@ -1131,7 +1139,7 @@ const HomeScreen = () => {
 
               {/* Selected Date Preview */}
               <View style={[styles.datePreview, { backgroundColor: colors.inputBackground }]}>
-                <Text style={[styles.datePreviewLabel, { color: colors.textSecondary }]}>Selected Date:</Text>
+                <Text style={[styles.datePreviewLabel, { color: colors.textSecondary }]}>{t('home.selectedDate')}:</Text>
                 <Text style={[styles.datePreviewValue, { color: colors.text }]}>
                   {tempSelectedDate.toISOString().split('T')[0]}
                 </Text>
@@ -1143,7 +1151,7 @@ const HomeScreen = () => {
                 style={[styles.datePickerCancelButton, { borderColor: colors.border }]}
                 onPress={() => setIsDatePickerVisible(false)}
               >
-                <Text style={{ color: colors.text }}>Cancel</Text>
+                <Text style={{ color: colors.text }}>{t('common.cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.datePickerConfirmButton, { backgroundColor: colors.primary }]}
@@ -1157,7 +1165,7 @@ const HomeScreen = () => {
                   setIsDatePickerVisible(false);
                 }}
               >
-                <Text style={{ color: theme === 'dark' ? '#000' : '#fff', fontWeight: 'bold' }}>Confirm</Text>
+                <Text style={{ color: theme === 'dark' ? '#000' : '#fff', fontWeight: 'bold' }}>{t('common.confirm') || 'Confirm'}</Text>
               </TouchableOpacity>
             </View>
           </View>

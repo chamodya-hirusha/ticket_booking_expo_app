@@ -20,6 +20,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { generateTicketPDF } from '../utils/ticketPdfGenerator';
 import { toast } from '../services/toast';
 import { useCustomToast } from '../context/ToastContext';
+import { useLanguage } from '../context/LanguageContext';
 
 type TicketDetailRouteProp = RouteProp<{ TicketDetail: { ticket: Ticket } }, 'TicketDetail'>;
 
@@ -31,6 +32,7 @@ const TicketDetail = () => {
    const { ticket } = route.params;
    const { colors, theme } = useTheme();
    const customToast = useCustomToast();
+   const { t } = useLanguage();
    const [qrLoading, setQrLoading] = useState(true);
    const [qrError, setQrError] = useState(false);
    const [downloading, setDownloading] = useState(false);
@@ -49,7 +51,7 @@ const TicketDetail = () => {
    // Download ticket as PDF
    const handleDownload = async () => {
       if (!ticket.qrCode) {
-         customToast.error('QR code is not available for this ticket.');
+         customToast.error(t('ticketDetail.qrNotAvailable'));
          return;
       }
 
@@ -64,20 +66,20 @@ const TicketDetail = () => {
                : (result.savedToDownloads ? 'Files app / Downloads folder' : 'App Documents folder');
 
             customToast.success(
-               `Your ticket PDF has been saved to your device.\n\nEvent: ${ticket.eventTitle}\nFile: ${result.fileName}`,
-               'PDF Generated Successfully! ✅'
+               `${t('ticketDetail.saveSuccess')}\n\n${t('explore.featuredEvents')}: ${ticket.eventTitle}\n${t('ticketDetail.file')}: ${result.fileName}`,
+               t('ticketDetail.pdfSuccessTitle')
             );
          } else {
             customToast.error(
-               result.error || 'Failed to generate ticket PDF. Please check your internet connection and try again.',
-               'PDF Generation Failed'
+               result.error || t('ticketDetail.pdfGenerationError'),
+               t('ticketDetail.pdfErrorTitle')
             );
          }
       } catch (error: any) {
          console.error('[TicketDetail] PDF generation error:', error);
          customToast.error(
-            error.message || 'Failed to generate ticket PDF. Please check your internet connection and try again.',
-            'PDF Generation Failed'
+            error.message || t('ticketDetail.pdfGenerationError'),
+            t('ticketDetail.pdfErrorTitle')
          );
       } finally {
          setDownloading(false);
@@ -87,7 +89,7 @@ const TicketDetail = () => {
    // Share ticket as PDF
    const handleShare = async () => {
       if (!ticket.qrCode) {
-         customToast.error('QR code is not available for this ticket.');
+         customToast.error(t('ticketDetail.qrNotAvailable'));
          return;
       }
 
@@ -99,19 +101,19 @@ const TicketDetail = () => {
 
          if (result.success) {
             customToast.success(
-               `Your ticket PDF has been shared successfully.\n\nEvent: ${ticket.eventTitle}`,
-               'PDF Shared Successfully! ✅'
+               `${t('ticketDetail.shareSuccess')}\n\n${t('explore.featuredEvents')}: ${ticket.eventTitle}`,
+               t('ticketDetail.shareSuccessTitle')
             );
          } else {
             customToast.error(
-               result.error || 'Failed to generate or share ticket PDF. Please check your internet connection and try again.',
-               'Share Failed'
+               result.error || t('ticketDetail.shareGenerationError'),
+               t('ticketDetail.shareErrorTitle')
             );
          }
       } catch (error: any) {
          customToast.error(
-            error.message || 'Failed to share ticket PDF. Please try again.',
-            'Share Failed'
+            error.message || t('ticketDetail.shareError'),
+            t('ticketDetail.shareErrorTitle')
          );
       } finally {
          setSharing(false);
@@ -124,7 +126,7 @@ const TicketDetail = () => {
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconButton}>
                <Ionicons name="chevron-back" size={28} color={colors.text} />
             </TouchableOpacity>
-            <Text style={[styles.headerTitle, { color: colors.text }]}>Your Ticket</Text>
+            <Text style={[styles.headerTitle, { color: colors.text }]}>{t('ticketDetail.title')}</Text>
             <TouchableOpacity style={styles.iconButton}>
                <Ionicons name="settings-outline" size={24} color={colors.text} />
             </TouchableOpacity>
@@ -138,7 +140,7 @@ const TicketDetail = () => {
             <View style={styles.badgeContainer}>
                <View style={[styles.validBadge, { borderColor: colors.success, shadowColor: colors.success }]}>
                   <MaterialIcons name="verified-user" size={16} color={colors.success} style={{ marginRight: 5 }} />
-                  <Text style={[styles.validText, { color: colors.success }]}>VALID</Text>
+                  <Text style={[styles.validText, { color: colors.success }]}>{t('ticketDetail.valid')}</Text>
                </View>
             </View>
 
@@ -157,7 +159,7 @@ const TicketDetail = () => {
                               <View style={[styles.qrCodePlaceholder, { backgroundColor: colors.inputBackground }]}>
                                  <MaterialIcons name="error-outline" size={60} color={colors.error || '#ff4444'} />
                                  <Text style={[styles.qrCodePlaceholderText, { color: colors.textSecondary }]}>
-                                    Failed to load QR Code
+                                    {t('ticketDetail.qrLoadError')}
                                  </Text>
                               </View>
                            ) : (
@@ -181,7 +183,7 @@ const TicketDetail = () => {
                         <View style={[styles.qrCodePlaceholder, { backgroundColor: colors.inputBackground }]}>
                            <MaterialIcons name="qr-code-scanner" size={80} color={colors.textSecondary} />
                            <Text style={[styles.qrCodePlaceholderText, { color: colors.textSecondary }]}>
-                              QR Code Not Available
+                              {t('ticketDetail.qrNotAvailableText')}
                            </Text>
                         </View>
                      )}
@@ -227,7 +229,7 @@ const TicketDetail = () => {
                      <MaterialIcons name="event-seat" size={20} color={colors.primary} />
                   </View>
                   <View>
-                     <Text style={[styles.subLabel, { color: colors.textSecondary }]}>Section / Row / Seat</Text>
+                     <Text style={[styles.subLabel, { color: colors.textSecondary }]}>{t('ticketDetail.seatLabel')}</Text>
                      <Text style={[styles.detailText, { color: colors.text }]}>
                         {ticket.seat || 'BLOCK C / ROW 12 / SEAT 42'}
                      </Text>
@@ -254,7 +256,7 @@ const TicketDetail = () => {
                      <Ionicons name="download-outline" size={24} color="#fff" style={{ marginRight: 10 }} />
                   )}
                   <Text style={styles.downloadButtonText}>
-                     {downloading ? 'Downloading...' : 'Download Ticket'}
+                     {downloading ? t('ticketDetail.downloading') : t('ticketDetail.downloadTicket')}
                   </Text>
                </LinearGradient>
             </TouchableOpacity>
@@ -278,7 +280,7 @@ const TicketDetail = () => {
                      <Ionicons name="share-outline" size={20} color={colors.text} style={{ marginRight: 8 }} />
                   )}
                   <Text style={[styles.secondaryButtonText, { color: colors.text }]}>
-                     {sharing ? 'Sharing...' : 'Share'}
+                     {sharing ? t('ticketDetail.sharing') : t('ticketDetail.share')}
                   </Text>
                </TouchableOpacity>
             </View>

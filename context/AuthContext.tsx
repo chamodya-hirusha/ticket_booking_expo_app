@@ -258,14 +258,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const response = await apiService.updateProfile(name, avatar);
 
             if (response.success && response.data) {
+                const userData: any = response.data;
                 const updatedUser: User = {
                     id: user.id,
-                    name: response.data.name || name,
-                    email: response.data.email || user.email,
-                    phone: response.data.phone || user.phone,
-                    avatar: response.data.avatar || avatar,
-                    role: response.data.role || user.role,
-                    isVerified: response.data.isVerified ?? response.data.verified ?? user.isVerified,
+                    name: userData.name || name,
+                    email: userData.email || user.email,
+                    phone: userData.phone || user.phone,
+                    avatar: userData.avatar || avatar,
+                    role: userData.role || user.role,
+                    isVerified: userData.isVerified ?? userData.verified ?? user.isVerified,
                 };
 
                 await AsyncStorage.setItem('user', JSON.stringify(updatedUser));

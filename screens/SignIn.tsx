@@ -27,9 +27,11 @@ import { ForgotPasswordModal, ResetPasswordModal, VerifyAccountModal } from '../
 import { BiometricModal } from '../components/modals/BiometricModal';
 import { apiService } from '../services/api';
 import { toast } from '../services/toast';
+import { useLanguage } from '../context/LanguageContext';
 
 const SignIn = ({ navigation }: any) => {
     const { colors, theme } = useTheme();
+    const { t } = useLanguage();
     const {
         signIn,
         signInWithBiometrics,
@@ -89,7 +91,7 @@ const SignIn = ({ navigation }: any) => {
 
     const handleSignIn = async () => {
         if (!email || !password) {
-            setError('Please fill in all fields');
+            setError(t('auth.fillAllFields'));
             return;
         }
 
@@ -117,7 +119,7 @@ const SignIn = ({ navigation }: any) => {
             try {
                 const resendResponse = await apiService.resendVerify(email);
                 if (resendResponse.success) {
-                    toast.success('Verification code sent to your email');
+                    toast.success(t('auth.verificationSent'));
                 }
             } catch (error) { }
 
@@ -126,7 +128,7 @@ const SignIn = ({ navigation }: any) => {
             // Success handled by App state
         } else {
             setIsLoading(false);
-            const errorMsg = result.error || 'Invalid email or password';
+            const errorMsg = result.error || t('auth.invalidCredentials');
             setError(errorMsg);
         }
     };
@@ -170,7 +172,7 @@ const SignIn = ({ navigation }: any) => {
 
                 try {
                     await apiService.resendVerify(email);
-                    toast.success('Verification code sent to your email');
+                    toast.success(t('auth.verificationSent'));
                 } catch (e) { }
 
                 setShowVerifyModal(true);
@@ -179,15 +181,15 @@ const SignIn = ({ navigation }: any) => {
                 const typeKey = type === LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION ? 'FACE' : 'FINGERPRINT';
                 await AsyncStorage.setItem('last_biometric_type', typeKey);
 
-                toast.success('Signed in successfully!');
+                toast.success(t('auth.signInSuccess'));
             } else {
-                const errorMsg = result.error || 'Biometric login failed';
+                const errorMsg = result.error || t('auth.biometricFailed');
                 if (!errorMsg.toLowerCase().includes('cancelled') && !errorMsg.toLowerCase().includes('failed')) {
                     toast.error(errorMsg);
                 }
             }
         } catch (error) {
-            toast.error('An unexpected error occurred during biometric login');
+            toast.error(t('auth.biometricUnexpectedError'));
         } finally {
             setIsLoading(false);
             isPromptingBiometrics.current = false;
@@ -210,19 +212,19 @@ const SignIn = ({ navigation }: any) => {
                         const token = tokenParts[1].split('&')[0];
                         const loginResult = await completeSocialLogin(token);
                         if (loginResult.success) {
-                            toast.success('Signed in successfully!');
+                            toast.success(t('auth.signInSuccess'));
                         } else {
-                            setError(loginResult.error || 'Failed to complete social login');
+                            setError(loginResult.error || t('auth.socialLoginFailed'));
                         }
                     }
                 } else if (url.includes('error=')) {
                     const errorParts = url.split('error=');
-                    const errorMsg = errorParts.length > 1 ? decodeURIComponent(errorParts[1].split('&')[0]) : 'Social login failed';
+                    const errorMsg = errorParts.length > 1 ? decodeURIComponent(errorParts[1].split('&')[0]) : t('auth.socialLoginFailed');
                     setError(errorMsg);
                 }
             }
         } catch (err: any) {
-            setError('An error occurred during social login. Please try again.');
+            setError(t('auth.socialLoginError'));
         }
     };
 
@@ -243,9 +245,9 @@ const SignIn = ({ navigation }: any) => {
                             style={styles.logo}
                             contentFit="contain"
                         />
-                        <Text style={[styles.title, { color: colors.text }]}>Welcome Back</Text>
+                        <Text style={[styles.title, { color: colors.text }]}>{t('auth.welcome')}</Text>
                         <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-                            Sign in to continue
+                            {t('auth.signInToContinue')}
                         </Text>
                     </View>
 
@@ -253,12 +255,12 @@ const SignIn = ({ navigation }: any) => {
                     <View style={styles.form}>
                         {/* Email Input */}
                         <View style={styles.inputContainer}>
-                            <Text style={[styles.label, { color: colors.textSecondary }]}>Email</Text>
+                            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('auth.email')}</Text>
                             <View style={[styles.inputWrapper, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
                                 <Feather name="mail" size={20} color={colors.textSecondary} />
                                 <TextInput
                                     style={[styles.input, { color: colors.text }]}
-                                    placeholder="Enter your email"
+                                    placeholder={t('auth.emailPlaceholder')}
                                     placeholderTextColor={colors.placeholder}
                                     value={email}
                                     onChangeText={setEmail}
@@ -271,12 +273,12 @@ const SignIn = ({ navigation }: any) => {
 
                         {/* Password Input */}
                         <View style={styles.inputContainer}>
-                            <Text style={[styles.label, { color: colors.textSecondary }]}>Password</Text>
+                            <Text style={[styles.label, { color: colors.textSecondary }]}>{t('auth.password')}</Text>
                             <View style={[styles.inputWrapper, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
                                 <Feather name="lock" size={20} color={colors.textSecondary} />
                                 <TextInput
                                     style={[styles.input, { color: colors.text }]}
-                                    placeholder="Enter your password"
+                                    placeholder={t('auth.passwordPlaceholder')}
                                     placeholderTextColor={colors.placeholder}
                                     value={password}
                                     onChangeText={setPassword}
@@ -305,7 +307,7 @@ const SignIn = ({ navigation }: any) => {
                             onPress={() => setShowForgotPassword(true)}
                         >
                             <Text style={[styles.forgotPasswordText, { color: colors.primary }]}>
-                                Forgot Password?
+                                {t('auth.forgotPassword')}
                             </Text>
                         </TouchableOpacity>
 
@@ -326,7 +328,7 @@ const SignIn = ({ navigation }: any) => {
                                     <ActivityIndicator color={theme === 'dark' ? '#000' : '#fff'} />
                                 ) : (
                                     <Text style={[styles.signInButtonText, { color: theme === 'dark' ? '#000' : '#fff' }]}>
-                                        Sign In
+                                        {t('auth.signIn')}
                                     </Text>
                                 )}
                             </LinearGradient>
@@ -335,7 +337,7 @@ const SignIn = ({ navigation }: any) => {
                         {/* Divider */}
                         <View style={styles.dividerContainer}>
                             <View style={[styles.divider, { backgroundColor: colors.border }]} />
-                            <Text style={[styles.dividerText, { color: colors.textSecondary }]}>OR</Text>
+                            <Text style={[styles.dividerText, { color: colors.textSecondary }]}>{t('auth.or')}</Text>
                             <View style={[styles.divider, { backgroundColor: colors.border }]} />
                         </View>
 
@@ -358,10 +360,10 @@ const SignIn = ({ navigation }: any) => {
                         {/* Sign Up Link */}
                         <View style={styles.signUpContainer}>
                             <Text style={[styles.signUpText, { color: colors.textSecondary }]}>
-                                Don't have an account?{' '}
+                                {t('auth.noAccount')}{' '}
                             </Text>
                             <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-                                <Text style={[styles.signUpLink, { color: colors.primary }]}>Sign Up</Text>
+                                <Text style={[styles.signUpLink, { color: colors.primary }]}>{t('auth.signUp')}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -419,15 +421,14 @@ const SignIn = ({ navigation }: any) => {
                         setIsLoading(false);
 
                         if (loginResult.success) {
-
                             setPendingPassword('');
                         } else {
-                            setError(loginResult.error || 'Account verified but failed to sign in. Please try again.');
+                            setError(loginResult.error || t('auth.verifiedFailedSignIn'));
                             setPendingPassword('');
                         }
                     } catch (error: any) {
                         setIsLoading(false);
-                        setError('Account verified but failed to sign in. Please try again.');
+                        setError(t('auth.verifiedFailedSignIn'));
                         setPendingPassword('');
                     }
 

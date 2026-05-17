@@ -18,6 +18,7 @@ import { Event, getEventImageUrl } from '../constants';
 import { useFavorites } from '../context/FavoritesContext';
 import { apiService } from '../services/api';
 import { transformEvent } from '../utils/event';
+import { useLanguage } from '../context/LanguageContext';
 
 type SeeAllRouteProp = RouteProp<{
     SeeAll: {
@@ -38,6 +39,7 @@ const SeeAll = () => {
     const route = useRoute<SeeAllRouteProp>();
     const { title, data: initialData, category, searchParams } = route.params;
     const { isFavorite, toggleFavorite } = useFavorites();
+    const { t } = useLanguage();
 
     const [events, setEvents] = useState<Event[]>(initialData || []);
     const [loading, setLoading] = useState(!initialData);
@@ -157,12 +159,12 @@ const SeeAll = () => {
                     setEvents([]);
                 }
             } else {
-                const errorMsg = response.error || response.message || 'Failed to load events';
+                const errorMsg = response.error || response.message || t('explore.loadFailed');
                 setError(errorMsg);
                 setEvents([]);
             }
         } catch (err: any) {
-            const errorMessage = err.message || 'Network error. Please check your connection.';
+            const errorMessage = err.message || t('common.networkError');
             setError(errorMessage);
             setEvents([]);
         } finally {
@@ -181,7 +183,7 @@ const SeeAll = () => {
                 try {
                     await fetchEvents(0);
                 } catch (error) {
-                    Alert.alert('Error', error.message);
+                    Alert.alert(t('common.error'), error.message);
                 }
             };
             fetchPaginationInfo();
@@ -381,7 +383,7 @@ const SeeAll = () => {
 
     // Format date helper
     const formatDate = (dateString?: string) => {
-        if (!dateString) return 'TBD';
+        if (!dateString) return t('ticketSelection.tbd');
         try {
             return new Date(dateString).toLocaleDateString('en-US', {
                 month: 'short',
@@ -414,7 +416,7 @@ const SeeAll = () => {
                     <View style={styles.infoRow}>
                         <Feather name="map-pin" size={12} color={colors.primary} />
                         <Text style={[styles.infoText, { color: colors.textSecondary }]} numberOfLines={1}>
-                            {item.location || 'TBD'}
+                            {item.location || t('ticketSelection.tbd')}
                         </Text>
                     </View>
                 </View>
@@ -445,7 +447,7 @@ const SeeAll = () => {
             {loading && events.length === 0 ? (
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color={colors.primary} />
-                    <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Loading events...</Text>
+                    <Text style={[styles.loadingText, { color: colors.textSecondary }]}>{t('seeAll.loadingEvents')}</Text>
                 </View>
             ) : error && events.length === 0 ? (
                 <View style={styles.errorContainer}>
@@ -455,13 +457,13 @@ const SeeAll = () => {
                         style={[styles.retryButton, { backgroundColor: colors.primary }]}
                         onPress={() => fetchEvents(0)}
                     >
-                        <Text style={[styles.retryButtonText, { color: theme === 'dark' ? '#000' : '#fff' }]}>Retry</Text>
+                        <Text style={[styles.retryButtonText, { color: theme === 'dark' ? '#000' : '#fff' }]}>{t('common.retry')}</Text>
                     </TouchableOpacity>
                 </View>
             ) : events.length === 0 ? (
                 <View style={styles.emptyContainer}>
                     <Feather name="calendar" size={48} color={colors.textSecondary} />
-                    <Text style={[styles.emptyText, { color: colors.textSecondary }]}>No events found</Text>
+                    <Text style={[styles.emptyText, { color: colors.textSecondary }]}>{t('seeAll.noEvents')}</Text>
                 </View>
             ) : (
                 <>

@@ -18,6 +18,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Event } from '../constants';
 import { formatPrice } from '../utils/event';
 import { apiService } from '../services/api';
+import { useLanguage } from '../context/LanguageContext';
 
 const { width } = Dimensions.get('window');
 
@@ -37,28 +38,29 @@ const BASE_TICKET_TYPES: Omit<TicketType, 'price'>[] = [
     {
         id: 'VIP',
         name: 'VIP',
-        features: ['Front Row Access', 'Meet & Greet', 'Exclusive Merchandise', 'VIP Lounge Access'],
-        color: '#FFD700',
+        features: [],
+        color: '#C0C0C0',
         icon: 'star'
     },
     {
         id: 'PREMIUM',
         name: 'Premium',
-        features: ['Premium Seating', 'Fast Track Entry', 'Complimentary Drink', 'Reserved Parking'],
+        features: [],
         color: '#C0C0C0',
-        icon: 'award'
+        icon: 'tag'
     },
     {
         id: 'GENERAL',
         name: 'General',
-        features: ['General Admission', 'Standard Seating', 'Event Access'],
-        color: '#CD7F32',
+        features: [],
+        color: '#C0C0C0',
         icon: 'tag'
     }
 ];
 
 const TicketSelection = () => {
     const { colors, theme } = useTheme();
+    const { t } = useLanguage();
     const navigation = useNavigation();
     const route = useRoute<TicketSelectionRouteProp>();
     const { event } = route.params;
@@ -72,7 +74,7 @@ const TicketSelection = () => {
             try {
                 const response = await apiService.reservation.getTicketTypes();
                 if (response.success && response.data) {
-                    setAvailableTypes(response.data);
+                    setAvailableTypes(response.data as string[]);
                 } else {
                     // Fallback to defaults if API fails
                     setAvailableTypes(['VIP', 'PREMIUM', 'GENERAL']);
@@ -97,7 +99,7 @@ const TicketSelection = () => {
                 const base = BASE_TICKET_TYPES.find(b => b.id === nameUpper) || {
                     id: nameUpper,
                     name: tt.name,
-                    features: ['Event Access'],
+                    features: [],
                     color: '#94a3b8',
                     icon: 'tag'
                 };
@@ -173,8 +175,8 @@ const TicketSelection = () => {
 
         if (hasOtherTickets) {
             Alert.alert(
-                "Selection Restricted",
-                "You can only buy tickets from one category at a time. Please remove other tickets to select this one."
+                t('ticketSelection.selectionRestrictedTitle'),
+                t('ticketSelection.selectionRestrictedDesc')
             );
             return;
         }
@@ -224,7 +226,7 @@ const TicketSelection = () => {
         return (
             <SafeAreaView style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
                 <ActivityIndicator size="large" color={colors.primary} />
-                <Text style={{ color: colors.text, marginTop: 16 }}>Loading ticket types...</Text>
+                <Text style={{ color: colors.text, marginTop: 16 }}>{t('ticketSelection.loading')}</Text>
             </SafeAreaView>
         );
     }
@@ -236,7 +238,7 @@ const TicketSelection = () => {
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                     <Feather name="arrow-left" size={24} color={colors.text} />
                 </TouchableOpacity>
-                <Text style={[styles.headerTitle, { color: colors.text }]}>Select Tickets</Text>
+                <Text style={[styles.headerTitle, { color: colors.text }]}>{t('ticketSelection.title')}</Text>
                 <View style={styles.placeholder} />
             </View>
 
@@ -259,19 +261,19 @@ const TicketSelection = () => {
                                 } catch {
                                     return event.date;
                                 }
-                            })() : 'TBD'}
+                            })() : t('ticketSelection.tbd')}
                         </Text>
                     </View>
                     <View style={styles.eventInfo}>
                         <Feather name="map-pin" size={14} color={colors.primary} />
                         <Text style={[styles.eventInfoText, { color: colors.textSecondary }]}>
-                            {event.location || 'TBD'}
+                            {event.location || t('ticketSelection.tbd')}
                         </Text>
                     </View>
                 </View>
 
                 {/* Ticket Types */}
-                <Text style={[styles.sectionTitle, { color: colors.text }]}>Choose Your Experience</Text>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('ticketSelection.chooseExperience')}</Text>
 
                 {TICKET_TYPES.map((ticket) => (
                     <View
@@ -346,7 +348,7 @@ const TicketSelection = () => {
                     <View style={styles.totalContainer}>
                         <View>
                             <Text style={[styles.totalLabel, { color: colors.textSecondary }]}>
-                                {getTotalTickets()} {getTotalTickets() === 1 ? 'Ticket' : 'Tickets'}
+                                {getTotalTickets()} {getTotalTickets() === 1 ? t('ticketSelection.ticket') : t('ticketSelection.tickets')}
                             </Text>
                             <Text style={[styles.totalAmount, { color: colors.text }]}>
                                 {formatPrice(calculateTotal())}
@@ -358,7 +360,7 @@ const TicketSelection = () => {
                             activeOpacity={0.8}
                         >
                             <Text style={[styles.continueButtonText, { color: theme === 'dark' ? '#000' : '#fff' }]}>
-                                Continue
+                                {t('ticketSelection.continue')}
                             </Text>
                             <Feather name="arrow-right" size={20} color={theme === 'dark' ? '#000' : '#fff'} />
                         </TouchableOpacity>

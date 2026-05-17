@@ -22,6 +22,7 @@ import { useFavorites } from '../context/FavoritesContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { apiService } from '../services/api';
 import { transformEvent, formatPrice, getEventPriceDisplay } from '../utils/event';
+import { useLanguage } from '../context/LanguageContext';
 
 type EventDetailsRouteProp = RouteProp<{ EventDetails: { event: Event } }, 'EventDetails'>;
 
@@ -33,6 +34,7 @@ const EventDetails = () => {
   const { event: initialEvent } = route.params;
   const { colors, theme } = useTheme();
   const { toggleFavorite, isFavorite } = useFavorites();
+  const { t } = useLanguage();
 
   const [event, setEvent] = useState<Event>(initialEvent);
   const [loading, setLoading] = useState(true);
@@ -94,7 +96,7 @@ const EventDetails = () => {
         }
         setLoading(false);
         if (!event?.name) {
-          setError('Event ID is missing. Cannot load event details.');
+          setError(t('eventDetails.invalidEventId'));
         }
         return;
       }
@@ -123,11 +125,10 @@ const EventDetails = () => {
 
           setEvent(transformedEvent);
         } else {
-          setError(response.error || 'Failed to load event details');
-
+          setError(response.error || t('eventDetails.errorLoadFailed'));
         }
       } catch (err: any) {
-        const errorMessage = err?.message || 'An error occurred while loading event details';
+        const errorMessage = err?.message || t('eventDetails.errorLoadFailed');
       } finally {
         setLoading(false);
       }
@@ -165,9 +166,9 @@ const EventDetails = () => {
       // Share action completed (success or dismissed)
     } catch (error: any) {
       Alert.alert(
-        'Share Failed',
-        error.message || 'Failed to share event. Please try again.',
-        [{ text: 'OK' }]
+        t('eventDetails.shareFailed'),
+        error.message || t('eventDetails.shareFailedDesc'),
+        [{ text: t('common.ok') || 'OK' }]
       );
     }
   };
@@ -186,7 +187,7 @@ const EventDetails = () => {
       >
         <StatusBar barStyle={theme === 'dark' ? 'light-content' : 'dark-content'} />
         <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={{ color: colors.text, marginTop: 16 }}>Loading event details...</Text>
+        <Text style={{ color: colors.text, marginTop: 16 }}>{t('eventDetails.loadingEvent')}</Text>
       </View>
     );
   }
@@ -233,7 +234,7 @@ const EventDetails = () => {
                 { color: theme === 'dark' ? '#000' : '#fff' },
               ]}
             >
-              Go Back
+              {t('common.goBack')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -348,7 +349,7 @@ const EventDetails = () => {
               </View>
               <View>
                 <Text style={[styles.gridLabel, { color: colors.textSecondary }]}>
-                  Date & Time
+                  {t('eventDetails.dateTime')}
                 </Text>
                 <Text style={[styles.gridValue, { color: colors.text }]}>{dateTime.date}</Text>
                 <Text style={[styles.gridValue, { color: colors.text }]}>{dateTime.time}</Text>
@@ -370,7 +371,7 @@ const EventDetails = () => {
               </View>
               <View>
                 <Text style={[styles.gridLabel, { color: colors.textSecondary }]}>
-                  Location
+                  {t('eventDetails.location')}
                 </Text>
                 <Text
                   style={[styles.gridValue, { color: colors.text }]}
@@ -396,7 +397,7 @@ const EventDetails = () => {
               </View>
               <View>
                 <Text style={[styles.gridLabel, { color: colors.textSecondary }]}>
-                  Price
+                  {t('eventDetails.price')}
                 </Text>
                 <Text style={[styles.gridValue, { color: colors.text }]}>{getMinPrice()}</Text>
               </View>
@@ -417,7 +418,7 @@ const EventDetails = () => {
               </View>
               <View>
                 <Text style={[styles.gridLabel, { color: colors.textSecondary }]}>
-                  Category
+                  {t('eventDetails.category')}
                 </Text>
                 <Text style={[styles.gridValue, { color: colors.text }]}>
                   {event.eventCategory || 'General'}
@@ -448,10 +449,10 @@ const EventDetails = () => {
             ]}
           >
             <Text style={[styles.aboutTitle, { color: colors.text }]}>
-              About the Event
+              {t('eventDetails.aboutTitle')}
             </Text>
             <Text style={[styles.aboutText, { color: colors.textSecondary }]}>
-              {event.description || 'No description available for this event.'}
+              {event.description || t('eventDetails.noDescription')}
             </Text>
           </View>
 
@@ -459,7 +460,7 @@ const EventDetails = () => {
           {event.ticketTypes && event.ticketTypes.length > 0 && (
             <View style={styles.pricingSection}>
               <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                Ticket Categories
+                {t('eventDetails.ticketCategories')}
               </Text>
               <View style={styles.pricingCardsContainer}>
                 {event.ticketTypes.map((tt, index) => {
@@ -468,20 +469,20 @@ const EventDetails = () => {
                   let icon = 'ticket' as any;
                   let badgeBg = 'rgba(148, 163, 184, 0.2)';
                   let gradientColors: [string, string, ...string[]] = ['rgba(148, 163, 184, 0.1)', 'transparent'];
-                  let statusText = 'Standard Entry';
+                  let statusText = t('eventDetails.standardEntry');
 
                   if (nameUpper.includes('VIP')) {
-                    color = '#ffd700';
+                    color = '#94a3b8';
                     icon = 'star';
-                    badgeBg = 'rgba(255, 215, 0, 0.2)';
-                    gradientColors = ['rgba(255, 215, 0, 0.15)', 'transparent'];
-                    statusText = 'Premium Experience';
+                    let badgeBg = 'rgba(148, 163, 184, 0.2)';
+                    gradientColors = ['rgba(148, 163, 184, 0.1)', 'transparent'];
+                    statusText = t('eventDetails.premiumExperience');
                   } else if (nameUpper.includes('PREMIUM')) {
                     color = colors.primary;
                     icon = 'diamond';
                     badgeBg = 'rgba(0, 255, 255, 0.15)';
                     gradientColors = ['rgba(0, 255, 255, 0.1)', 'transparent'];
-                    statusText = 'Priority Access';
+                    statusText = t('eventDetails.priorityAccess');
                   }
 
                   return (
@@ -547,7 +548,7 @@ const EventDetails = () => {
               { color: theme === 'dark' ? '#000' : '#fff' },
             ]}
           >
-            Book Ticket
+            {t('eventDetails.bookTicket')}
           </Text>
         </TouchableOpacity>
       </View>

@@ -4,7 +4,7 @@ import { FavoritesProvider } from './context/FavoritesContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 import { ToastProvider } from './context/ToastContext';
-import { LanguageProvider } from './context/LanguageContext';
+import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -57,11 +57,13 @@ const Tab = createBottomTabNavigator();
 
 const TabNavigator = () => {
   const { colors } = useTheme();
+  const { t } = useLanguage();
 
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
+        tabBarHideOnKeyboard: true,
         tabBarStyle: {
           position: 'absolute',
           bottom: 20,
@@ -100,7 +102,7 @@ const TabNavigator = () => {
         name="HomeTab"
         component={Home}
         options={{
-          tabBarLabel: 'Home',
+          tabBarLabel: t('tabs.home'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home" size={24} color={color} />
           ),
@@ -110,7 +112,7 @@ const TabNavigator = () => {
         name="Favorites"
         component={Favorites}
         options={{
-          tabBarLabel: 'Favorites',
+          tabBarLabel: t('tabs.favorites'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="heart" size={24} color={color} />
           ),
@@ -120,7 +122,7 @@ const TabNavigator = () => {
         name="Tickets"
         component={MyTickets}
         options={{
-          tabBarLabel: 'Tickets',
+          tabBarLabel: t('tabs.tickets'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="ticket" size={24} color={color} />
           ),
@@ -130,7 +132,7 @@ const TabNavigator = () => {
         name="ProfileTab"
         component={Profile}
         options={{
-          tabBarLabel: 'Profile',
+          tabBarLabel: t('tabs.profile'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person" size={24} color={color} />
           ),

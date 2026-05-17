@@ -23,6 +23,7 @@ import { apiService } from '../services/api';
 import { Reservation, StripePayment, PaginatedResponse, Event as ApiEvent } from '../services/api/types';
 import * as Sharing from 'expo-sharing';
 import { generateTicketPDF } from '../utils/ticketPdfGenerator';
+import { useLanguage } from '../context/LanguageContext';
 import { toast } from '../services/toast';
 import { useCustomToast } from '../context/ToastContext';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -34,6 +35,7 @@ const MyTickets = () => {
   const navigation = useNavigation<NavigationProp>();
   const { colors, theme } = useTheme();
   const { isAuthenticated, handlePermissionError } = useAuth();
+  const { t } = useLanguage();
   const customToast = useCustomToast();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
@@ -793,7 +795,15 @@ const MyTickets = () => {
             <Text style={[
               styles.statusText,
               item.status === 'Active' ? { color: colors.primary } : { color: colors.textSecondary }
-            ]}>{item.status}</Text>
+            ]}>
+              {item.status === 'Active'
+                ? t('tickets.active')
+                : item.status === 'Used'
+                  ? t('tickets.used')
+                  : item.status === 'Expired'
+                    ? t('tickets.expired')
+                    : item.status}
+            </Text>
           </View>
         </View>
       </View>
@@ -859,7 +869,7 @@ const MyTickets = () => {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>My Tickets</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>{t('tickets.title')}</Text>
         <TouchableOpacity style={[styles.searchButton, { backgroundColor: colors.surface }]}>
           <MaterialIcons name="search" size={24} color={colors.text} />
         </TouchableOpacity>
@@ -868,7 +878,7 @@ const MyTickets = () => {
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Loading tickets...</Text>
+          <Text style={[styles.loadingText, { color: colors.textSecondary }]}>{t('tickets.loadingTickets')}</Text>
         </View>
       ) : error ? (
         <View style={styles.errorContainer}>
@@ -878,23 +888,23 @@ const MyTickets = () => {
             style={[styles.retryButton, { backgroundColor: colors.primary }]}
             onPress={() => fetchTickets()}
           >
-            <Text style={[styles.retryButtonText, { color: theme === 'dark' ? '#000' : '#fff' }]}>Retry</Text>
+            <Text style={[styles.retryButtonText, { color: theme === 'dark' ? '#000' : '#fff' }]}>{t('common.retry')}</Text>
           </TouchableOpacity>
         </View>
       ) : tickets.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Feather name="credit-card" size={48} color={colors.textSecondary} />
-          <Text style={[styles.emptyText, { color: colors.textSecondary }]}>No tickets found</Text>
+          <Text style={[styles.emptyText, { color: colors.textSecondary }]}>{t('tickets.noTickets')}</Text>
           <Text style={[styles.emptySubtext, { color: colors.textSecondary }]}>
             {!isAuthenticated
-              ? 'Please sign in to view your tickets'
-              : 'You haven\'t purchased any tickets yet.\nComplete a booking to see your tickets here.'}
+              ? t('tickets.signInToView')
+              : t('tickets.noTicketsDetails')}
           </Text>
           <TouchableOpacity
             style={[styles.retryButton, { backgroundColor: colors.primary, marginTop: 20 }]}
             onPress={() => navigation.navigate('MainTabs', { screen: 'HomeTab' })}
           >
-            <Text style={[styles.retryButtonText, { color: theme === 'dark' ? '#000' : '#fff' }]}>Discover Events</Text>
+            <Text style={[styles.retryButtonText, { color: theme === 'dark' ? '#000' : '#fff' }]}>{t('tickets.discoverEvents')}</Text>
           </TouchableOpacity>
         </View>
       ) : (

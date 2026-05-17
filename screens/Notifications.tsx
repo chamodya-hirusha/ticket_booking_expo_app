@@ -16,10 +16,12 @@ import { useTheme } from '../context/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import { useNotifications } from '../context/NotificationContext';
 import { Notification } from '../services/notifications';
+import { useLanguage } from '../context/LanguageContext';
 
 const Notifications = () => {
     const { colors, theme } = useTheme();
     const navigation = useNavigation();
+    const { t } = useLanguage();
     const {
         notifications,
         isLoading,
@@ -42,9 +44,9 @@ const Notifications = () => {
         // Add success notification
         await addNotification({
             id: `mark_all_read_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            title: 'All Notifications Marked as Read',
-            message: 'All notifications have been marked as read successfully.',
-            time: 'Just now',
+            title: t('notifications.markAllReadTitle'),
+            message: t('notifications.markAllReadMessage'),
+            time: t('notifications.justNow'),
             type: 'system',
             read: false,
             createdAt: new Date().toISOString(),
@@ -115,10 +117,10 @@ const Notifications = () => {
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                     <Feather name="arrow-left" size={24} color={colors.text} />
                 </TouchableOpacity>
-                <Text style={[styles.headerTitle, { color: colors.text }]}>Notifications</Text>
+                <Text style={[styles.headerTitle, { color: colors.text }]}>{t('notifications.title')}</Text>
                 {notifications.length > 0 && (
                     <TouchableOpacity onPress={handleMarkAllAsRead}>
-                        <Text style={[styles.markAllRead, { color: colors.primary }]}>Mark all read</Text>
+                        <Text style={[styles.markAllRead, { color: colors.primary }]}>{t('notifications.markAllRead')}</Text>
                     </TouchableOpacity>
                 )}
             </View>
@@ -126,14 +128,14 @@ const Notifications = () => {
             {isLoading && notifications.length === 0 ? (
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color={colors.primary} />
-                    <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Loading notifications...</Text>
+                    <Text style={[styles.loadingText, { color: colors.textSecondary }]}>{t('notifications.loading')}</Text>
                 </View>
             ) : notifications.length === 0 ? (
                 <View style={styles.emptyContainer}>
                     <Feather name="bell-off" size={48} color={colors.textSecondary} />
-                    <Text style={[styles.emptyText, { color: colors.textSecondary }]}>No notifications yet</Text>
+                    <Text style={[styles.emptyText, { color: colors.textSecondary }]}>{t('notifications.emptyTitle')}</Text>
                     <Text style={[styles.emptySubtext, { color: colors.textSecondary }]}>
-                        You'll see your notifications here when they arrive
+                        {t('notifications.emptySubtitle')}
                     </Text>
                 </View>
             ) : (
@@ -192,7 +194,7 @@ const Notifications = () => {
                                     style={[styles.modalButton, { backgroundColor: colors.primary }]}
                                     onPress={() => setSelectedNotification(null)}
                                 >
-                                    <Text style={[styles.modalButtonText, { color: theme === 'dark' ? '#000' : '#fff' }]}>Close</Text>
+                                    <Text style={[styles.modalButtonText, { color: theme === 'dark' ? '#000' : '#fff' }]}>{t('common.close')}</Text>
                                 </TouchableOpacity>
                             </>
                         )}

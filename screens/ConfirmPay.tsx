@@ -183,7 +183,7 @@ const ConfirmPay = () => {
             return;
          }
 
-         const reservation = reservationResponse.data;
+         const reservation = reservationResponse.data as any;
          const paymentResponse = await apiService.payment.createStripePayment(
             reservation.id,
             totalAmount,
@@ -197,7 +197,7 @@ const ConfirmPay = () => {
             return;
          }
 
-         const payment = paymentResponse.data;
+         const payment = paymentResponse.data as any;
          const { error: initError } = await initPaymentSheet({
             paymentIntentClientSecret: payment.clientSecret!,
             merchantDisplayName: 'Ticket Booking',
@@ -299,7 +299,7 @@ const ConfirmPay = () => {
                            month: 'short',
                            day: 'numeric',
                            year: 'numeric'
-                        }) : 'TBD'}
+                        }) : t('ticketSelection.tbd')}
                      </Text>
                   </View>
                   <View style={styles.rowItem}>

@@ -22,7 +22,7 @@ export class CategoryApiService extends BaseApiService {
      */
     async getEventCategories(): Promise<ApiResponse<string[]>> {
         const response = await this.getPublicCategories();
-        if (response.success && response.data) {
+        if (response.success && Array.isArray(response.data)) {
             return {
                 success: true,
                 data: response.data.map(cat => cat.name),
