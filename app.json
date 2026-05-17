@@ -4,7 +4,7 @@
     "slug": "krowdch",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/Logo.png",
+    "icon": "./assets/icon.png",
     "scheme": "krowd.ch",
     "sdkVersion": "54.0.0",
     "platforms": [
@@ -64,7 +64,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/Logo.png",
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0a0a1a"
       },
       "splash": {
@@ -75,6 +75,8 @@
       "package": "krowd.ch.app",
       "permissions": [
         "INTERNET",
+        "USE_BIOMETRIC",
+        "USE_FINGERPRINT",
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
         "READ_MEDIA_IMAGES",
