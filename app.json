@@ -65,7 +65,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#0a0a1a"
+        "backgroundColor": "#ffffff"
       },
       "splash": {
         "image": "./assets/Logo.png",
@@ -101,6 +101,6 @@
         "projectId": "272cc1d3-c777-47c8-b03c-748ef8f256e8"
       }
     },
-    "owner": "chamodya_hirusha"
+    "owner": "Braintisa"
   }
 }
