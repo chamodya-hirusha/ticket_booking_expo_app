@@ -1,15 +1,15 @@
 // API Configuration
 export const API_CONFIG = {
-  BASE_URL: 'http://kgs8o8swgog8sgk48ko8oo40.72.61.111.83.sslip.io/api',
-  TIMEOUT: 30000, // 30 seconds
+  BASE_URL:
+    'https://kgs8o8swgog8sgk48ko8oo40.72.61.111.83.sslip.io/api',
+  TIMEOUT: 30000,
 };
 
 // Stripe Configuration
 export const STRIPE_CONFIG = {
-  PUBLISHABLE_KEY: 'pk_test_51SgoIoCYPLJFJWY5PySNQWkVXnw8kuYHoZ6EVD7807dcql4hzzftXN6jDHfE978f6RAGRCqwgxtOOK2Vz3t5gIcw003oHJu1gn',
+  PUBLISHABLE_KEY:
+    'pk_test_51SgoIoCYPLJFJWY5PySNQWkVXnw8kuYHoZ6EVD7807dcql4hzzftXN6jDHfE978f6RAGRCqwgxtOOK2Vz3t5gIcw003oHJu1gn',
 };
-
-
 
 export interface TicketTypeInfo {
   id: number;
