@@ -47,6 +47,8 @@ import SignUp from './screens/SignUp';
 import SeeAll from './screens/SeeAll';
 import Notifications from './screens/Notifications';
 import AnimatedSplashScreen from './components/AnimatedSplashScreen';
+import OfflineNotice from './components/OfflineNotice';
+
 
 // Define navigators
 const Stack = createStackNavigator();
@@ -151,7 +153,7 @@ const AppNavigator = () => {
   }
 
   return (
-    <SafeAreaProvider>
+    <>
       <StatusBar style={theme === 'dark' ? 'light' : 'dark'} />
       <NavigationContainer
         theme={{
@@ -200,7 +202,7 @@ const AppNavigator = () => {
           )}
         </Stack.Navigator>
       </NavigationContainer>
-    </SafeAreaProvider>
+    </>
   );
 };
 
@@ -225,29 +227,34 @@ const App = () => {
   }, []);
 
   return (
-    <StripeProvider
-      publishableKey={STRIPE_CONFIG.PUBLISHABLE_KEY}
-      merchantIdentifier="merchant.krowd.ch" // Optional: required for Apple Pay
-      urlScheme="krowd.ch" // Optional: required for 3D Secure and bank redirects
-    >
-      <ThemeProvider>
-        <LanguageProvider>
-        <ToastProvider>
-          <AuthProvider>
-            <NotificationProvider>
-              <FavoritesProvider>
-                {isSplashVisible ? (
-                  <AnimatedSplashScreen onAnimationComplete={() => setIsSplashVisible(false)} />
-                ) : (
-                  <AppNavigator />
-                )}
-              </FavoritesProvider>
-            </NotificationProvider>
-          </AuthProvider>
-        </ToastProvider>
-        </LanguageProvider>
-      </ThemeProvider>
-    </StripeProvider>
+    <SafeAreaProvider>
+      <StripeProvider
+        publishableKey={STRIPE_CONFIG.PUBLISHABLE_KEY}
+        merchantIdentifier="merchant.krowd.ch" // Optional: required for Apple Pay
+        urlScheme="krowd.ch" // Optional: required for 3D Secure and bank redirects
+      >
+        <ThemeProvider>
+          <LanguageProvider>
+          <ToastProvider>
+            <AuthProvider>
+              <NotificationProvider>
+                <FavoritesProvider>
+                  {isSplashVisible ? (
+                    <AnimatedSplashScreen onAnimationComplete={() => setIsSplashVisible(false)} />
+                  ) : (
+                    <>
+                      <AppNavigator />
+                      <OfflineNotice />
+                    </>
+                  )}
+                </FavoritesProvider>
+              </NotificationProvider>
+            </AuthProvider>
+          </ToastProvider>
+          </LanguageProvider>
+        </ThemeProvider>
+      </StripeProvider>
+    </SafeAreaProvider>
   );
 };
 

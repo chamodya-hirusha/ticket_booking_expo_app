@@ -1,7 +1,6 @@
 // API Configuration
 export const API_CONFIG = {
-  BASE_URL:
-    'https://kgs8o8swgog8sgk48ko8oo40.72.61.111.83.sslip.io/api',
+  BASE_URL: 'http://kgs8o8swgog8sgk48ko8oo40.72.61.111.83.sslip.io/api',
   TIMEOUT: 30000,
 };
 
