@@ -91,16 +91,16 @@
       ],
       "blockedPermissions": [
         "android.permission.RECORD_AUDIO"
-      ]
+      ],
+      "usesCleartextTraffic": true
     },
     "web": {
       "favicon": "./assets/Logo.png"
     },
     "extra": {
       "eas": {
-        "projectId": "272cc1d3-c777-47c8-b03c-748ef8f256e8"
+        "projectId": "44783497-6a11-478f-b8fc-10b7bc05ca71"
       }
-    },
-    "owner": "chamodya_hirusha"
+    }
   }
 }
