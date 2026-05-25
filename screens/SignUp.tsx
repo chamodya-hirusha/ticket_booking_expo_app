@@ -126,10 +126,16 @@ const SignUp = ({ navigation }: any) => {
             setPhone('');
             setError('');
         } else {
-            const errorMsg = result.error || t('auth.verifiedFailedSignIn');
+            let errorMsg = result.error || t('auth.verifiedFailedSignIn');
+            
+            const errorMsgLower = errorMsg.toLowerCase();
+            
+            // Change generic verification/validation failed message
+            if (errorMsgLower.includes('verification failed') || errorMsgLower.includes('validation failed')) {
+                errorMsg = 'Email, phone number, name, password incorrect.';
+            }
             
             // Check for email already use error
-            const errorMsgLower = errorMsg.toLowerCase();
             if (errorMsgLower.includes('email') && 
                 (errorMsgLower.includes('already') || 
                  errorMsgLower.includes('duplicate') ||
@@ -373,7 +379,7 @@ const SignUp = ({ navigation }: any) => {
                 email={verifyEmail}
                 onVerified={async () => {
                     // After verification, try to auto-login using stored password
-                    setShowVerifyModal(false);
+                    // DO NOT close modal here to prevent the SignUp screen from blinking before navigation
                     setIsLoading(true);
                     
                     try {
@@ -383,17 +389,20 @@ const SignUp = ({ navigation }: any) => {
                         if (loginResult.success) {
                             console.log('[SignUp] Verification and auto-login successful');
                             setPendingPassword('');
+                            // The AuthContext will switch to the main stack, automatically unmounting this screen
                         } else {
+                            setShowVerifyModal(false);
                             setError(t('auth.verifiedFailedSignInManual'));
                             setPendingPassword(''); 
+                            setVerifyEmail('');
                         }
                     } catch (error: any) {
                         setIsLoading(false);
+                        setShowVerifyModal(false);
                         setError(t('auth.verifiedFailedSignInManual'));
                         setPendingPassword(''); 
+                        setVerifyEmail('');
                     }
-                    
-                    setVerifyEmail('');
                 }}
             />
         </SafeAreaView>

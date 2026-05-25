@@ -420,7 +420,7 @@ const Profile = () => {
             onRequestClose={() => setLangModalVisible(false)}
          >
             <View style={styles.modalOverlay}>
-               <View style={[styles.modalCard, { backgroundColor: colors.surface }]}>
+               <View style={[styles.modalCard, { backgroundColor: theme === 'dark' ? '#121212' : colors.surface }]}>
                   <Text style={[styles.modalTitle, { color: colors.text }]}>{t('settings.selectLanguage')}</Text>
                   <FlatList
                      data={LANGUAGES}
@@ -429,20 +429,20 @@ const Profile = () => {
                         <TouchableOpacity
                            style={[
                               styles.langItem,
-                              item.code === language && { backgroundColor: colors.primary + '20' }
+                              item.code === language && { backgroundColor: theme === 'dark' ? 'rgba(25, 230, 230, 0.15)' : colors.primary + '20' }
                            ]}
                            onPress={() => { setLanguage(item.code as SupportedLanguage); setLangModalVisible(false); }}
                         >
                            <Text style={{ fontSize: 22 }}>{item.flag}</Text>
                            <Text style={[styles.langLabel, { color: colors.text }]}>{item.label}</Text>
                            {item.code === language && (
-                              <Feather name="check" size={18} color={colors.primary} style={{ marginLeft: 'auto' }} />
+                              <Feather name="check" size={18} color={theme === 'dark' ? '#19E6E6' : colors.primary} style={{ marginLeft: 'auto' }} />
                            )}
                         </TouchableOpacity>
                      )}
                   />
                   <TouchableOpacity
-                     style={[styles.modalClose, { backgroundColor: colors.primary }]}
+                     style={[styles.modalClose, { backgroundColor: theme === 'dark' ? '#19E6E6' : colors.primary }]}
                      onPress={() => setLangModalVisible(false)}
                   >
                      <Text style={{ color: theme === 'dark' ? '#000' : '#fff', fontWeight: 'bold' }}>{t('common.cancel')}</Text>
